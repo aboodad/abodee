@@ -22,7 +22,9 @@ export function LogoMark({ size = 44, customUrl }: { size?: number; customUrl?: 
         alt="هاشم للطيب"
         className="size-full object-cover object-center transition-transform duration-300 hover:scale-105"
         onError={(e) => {
-          (e.currentTarget as HTMLImageElement).src = "/hashem-logo.jpg";
+          const target = e.currentTarget as HTMLImageElement;
+          target.onerror = null;
+          target.src = "/favicon.png";
         }}
       />
     </span>

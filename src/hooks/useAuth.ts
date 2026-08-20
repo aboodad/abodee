@@ -22,18 +22,24 @@ export function useAuth() {
       if (!active) return;
       setSession(s);
       setUser(s?.user ?? null);
-    });
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
       setLoading(false);
     });
 
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!active) return;
+        setSession(data?.session ?? null);
+        setUser(data?.session?.user ?? null);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (active) setLoading(false);
+      });
+
     return () => {
       active = false;
-      sub.subscription.unsubscribe();
+      sub?.subscription?.unsubscribe();
     };
   }, []);
 
@@ -50,7 +56,11 @@ export function useAuth() {
       .maybeSingle()
       .then(({ data }) => {
         if (active) setProfile((data as Profile) ?? null);
+      })
+      .catch((e) => {
+        console.warn("profile fetch notice:", e);
       });
+
     return () => {
       active = false;
     };
