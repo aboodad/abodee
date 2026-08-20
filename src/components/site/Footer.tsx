@@ -28,7 +28,7 @@ export function Footer() {
         </div>
 
         <div className="space-y-3">
-          <h3 className="font-display text-sm font-semibold text-foreground">روابط سريعة</h3>
+          <h3 className="font-display text-sm font-semibold text-foreground">{t("quick_links")}</h3>
           <nav className="flex flex-col gap-2 text-xs text-muted-foreground">
             <Link to="/" className="hover:text-primary transition-colors">
               {t("nav_home")}
@@ -52,19 +52,19 @@ export function Footer() {
         </div>
 
         <div className="space-y-3">
-          <h3 className="font-display text-sm font-semibold text-foreground">طرق الدفع والتوصيل</h3>
+          <h3 className="font-display text-sm font-semibold text-foreground">{t("payment_delivery")}</h3>
           <div className="space-y-2 text-xs text-muted-foreground">
             <p className="flex items-center gap-1.5 font-medium text-foreground">
-              💳 التحويل البنكي (بنك مسقط)
+              {t("bank_transfer_muscat")}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              يتم الدفع مسبقاً لحساب المحل قبل إرسال الطلب.
+              {t("payment_advance_note")}
             </p>
             <p className="flex items-center gap-1.5 font-medium text-foreground mt-2">
-              🚚 التوصيل والاستلام
+              {t("delivery_pickup_title")}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              التوصيل لجميع مناطق السلطنة ودول الخليج، أو الاستلام من فروعنا.
+              {t("delivery_pickup_desc")}
             </p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export function Footer() {
               className="flex items-center gap-2 text-emerald-600 hover:text-emerald-500 font-medium transition-colors"
             >
               <MessageCircle className="size-4" />
-              <span>واتساب: +{whatsapp}</span>
+              <span>{t("whatsapp_label")}: +{whatsapp}</span>
             </a>
             <a
               href={`https://instagram.com/${instagram}`}
@@ -102,7 +102,7 @@ export function Footer() {
               className="flex items-center gap-2 hover:text-primary transition-colors"
             >
               <MapPin className="size-4" />
-              <span>فروعنا في سلطنة عمان</span>
+              <span>{t("branches_oman")}</span>
             </Link>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function Footer() {
 
       <div className="mx-auto mt-12 max-w-7xl border-t border-border/50 pt-6 px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground/80">
         <p>{t("footer_note")}</p>
-        <p className="text-[11px]">فخامة العبير الملكي واللبان الحوجري الأصيل</p>
+        <p className="text-[11px]">{t("footer_tagline")}</p>
       </div>
     </footer>
   );

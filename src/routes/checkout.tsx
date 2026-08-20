@@ -82,7 +82,7 @@ function CheckoutPage() {
 
   const detectLocation = () => {
     if (!navigator.geolocation) {
-      toast.error("خدمة تحديد الموقع غير متوفرة في المتصفح");
+      toast.error(t("checkout_location_unavailable"));
       return;
     }
     setLocating(true);
@@ -90,11 +90,11 @@ function CheckoutPage() {
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);
-        toast.success("تم تحديد إحداثيات موقعك بنجاح");
+        toast.success(t("checkout_location_success"));
       },
       (err) => {
         setLocating(false);
-        toast.error(err.message || "تعذر تحديد الموقع تلقائياً");
+        toast.error(err.message || t("checkout_location_error"));
       },
       { enableHighAccuracy: true, timeout: 12000 },
     );
@@ -105,9 +105,9 @@ function CheckoutPage() {
     try {
       const url = await uploadProductImage(file);
       setReceiptImageUrl(url);
-      toast.success("تم رفع صورة إشعار التحويل بنجاح");
+      toast.success(t("checkout_receipt_uploaded"));
     } catch (e) {
-      toast.error("فشل رفع صورة الإشعار");
+      toast.error(t("checkout_receipt_upload_error"));
     } finally {
       setUploadingReceipt(false);
     }
@@ -115,12 +115,12 @@ function CheckoutPage() {
 
   const submitOrder = async () => {
     if (!name.trim() || !phone.trim()) {
-      toast.error("يرجى إدخال الاسم ورقم الهاتف");
+      toast.error(t("checkout_name_phone_error"));
       setStep(0);
       return;
     }
     if (deliveryMethod === "delivery" && !address.trim() && !coords) {
-      toast.error("يرجى إدخال عنوان التوصيل");
+      toast.error(t("checkout_address_error"));
       setStep(1);
       return;
     }
@@ -137,7 +137,7 @@ function CheckoutPage() {
         customer_phone: phone,
         customer_email: email || undefined,
         delivery_method: deliveryMethod,
-        delivery_address: deliveryMethod === "pickup" ? "استلام من الفرع" : address,
+        delivery_address: deliveryMethod === "pickup" ? t("checkout_pickup_branch") : address,
         customer_notes: notes || undefined,
         transfer_reference: transferReference || undefined,
         receipt_image_url: receiptImageUrl || undefined,
@@ -154,7 +154,7 @@ function CheckoutPage() {
         phone,
         email: email || undefined,
         deliveryMethod,
-        address: deliveryMethod === "pickup" ? "استلام من الفرع (Pick up)" : address,
+        address: deliveryMethod === "pickup" ? t("checkout_pickup") : address,
         notes: notes || undefined,
         transferReference: transferReference || undefined,
         receiptImageUrl: receiptImageUrl || undefined,
@@ -173,7 +173,7 @@ function CheckoutPage() {
 
       router.navigate({ to: "/orders" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "حدث خطأ أثناء تسجيل الطلب");
+      toast.error(err instanceof Error ? err.message : t("checkout_order_error"));
     } finally {
       setBusy(false);
     }
@@ -240,7 +240,7 @@ function CheckoutPage() {
                 {t("step_details")}
               </h2>
               <p className="text-xs text-muted-foreground mt-1">
-                أدخل بيانات التواصل الخاصة بك لإتمام وتسجيل الطلب.
+                {t("checkout_enter_details")}
               </p>
             </div>
 
@@ -254,7 +254,7 @@ function CheckoutPage() {
                   name="name"
                   autoComplete="name"
                   className={field}
-                  placeholder="مثال: حنان الحارثي"
+                  placeholder={t("checkout_name_placeholder")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -271,7 +271,7 @@ function CheckoutPage() {
                   autoComplete="tel"
                   className={field}
                   dir="ltr"
-                  placeholder="مثال: 96895081141"
+                  placeholder={t("checkout_phone_placeholder")}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
@@ -280,7 +280,7 @@ function CheckoutPage() {
 
               <div>
                 <label htmlFor="checkout-email" className="text-xs font-medium text-muted-foreground block mb-1.5">
-                  {t("email")} (اختياري)
+                  {t("email")} ({t("checkout_email_optional")})
                 </label>
                 <input
                   id="checkout-email"
@@ -302,7 +302,7 @@ function CheckoutPage() {
                 type="button"
                 onClick={() => {
                   if (!name.trim() || !phone.trim()) {
-                    toast.error("يرجى إدخال الاسم ورقم الهاتف للمتابعة");
+                    toast.error(t("checkout_name_phone_required"));
                     return;
                   }
                   setStep(1);
@@ -378,7 +378,7 @@ function CheckoutPage() {
                   </label>
                   <textarea
                     className={`${field} min-h-[90px]`}
-                    placeholder="مثال: مسقط — الخوير، شارع المها، بناية رقم 14"
+                    placeholder={t("checkout_address_placeholder")}
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
@@ -393,7 +393,7 @@ function CheckoutPage() {
                     className="inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-2.5 text-xs font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer"
                   >
                     {locating ? <Loader2 className="size-4 animate-spin" /> : <MapPin className="size-4" />}
-                    <span>{coords ? "تحديث الموقع الجغرافي (GPS)" : "تحديد موقعي الحالي تلقائياً"}</span>
+                    <span>{coords ? t("checkout_update_location") : t("checkout_detect_location")}</span>
                   </button>
 
                   {coords ? (
@@ -427,7 +427,7 @@ function CheckoutPage() {
               </label>
               <input
                 className={field}
-                placeholder="مثال: يرجى التوصيل بعد العصر، تغليف كهدية فاخرة..."
+                placeholder={t("checkout_notes_placeholder")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
@@ -445,7 +445,7 @@ function CheckoutPage() {
                 type="button"
                 onClick={() => {
                   if (deliveryMethod === "delivery" && !address.trim() && !coords) {
-                    toast.error("يرجى كتابة عنوان التوصيل للمتابعة");
+                    toast.error(t("checkout_address_required"));
                     return;
                   }
                   setStep(2);
@@ -517,7 +517,7 @@ function CheckoutPage() {
                 <input
                   className={field}
                   dir="ltr"
-                  placeholder="مثال: TXN-89302194 / 10098432"
+                  placeholder={t("checkout_transfer_placeholder")}
                   value={transferReference}
                   onChange={(e) => setTransferReference(e.target.value)}
                 />
@@ -532,7 +532,7 @@ function CheckoutPage() {
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
                     <img
                       src={receiptImageUrl}
-                      alt="إشعار التحويل"
+                      alt={t("checkout_receipt_alt")}
                       className="size-16 rounded-lg object-cover border border-border"
                     />
                     <div className="flex-1 text-xs space-y-1">
@@ -550,7 +550,7 @@ function CheckoutPage() {
                       type="button"
                       onClick={() => setReceiptImageUrl("")}
                       className="p-2 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
-                      title="حذف الصورة"
+                      title={t("checkout_receipt_delete")}
                     >
                       <Trash2 className="size-4" />
                     </button>
@@ -562,7 +562,7 @@ function CheckoutPage() {
                     ) : (
                       <Upload className="size-4" />
                     )}
-                    <span>{uploadingReceipt ? "جاري رفع الإشعار..." : "اختر صورة إشعار التحويل من جهازك"}</span>
+                    <span>{uploadingReceipt ? t("checkout_receipt_uploading") : t("checkout_receipt_choose")}</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -593,7 +593,7 @@ function CheckoutPage() {
                       />
                       <div>
                         <p className="font-medium text-foreground">{pick(l.name_ar, l.name_en)}</p>
-                        <p className="text-muted-foreground">الكمية: {l.qty}</p>
+                        <p className="text-muted-foreground">{t("quantity")}: {l.qty}</p>
                       </div>
                     </div>
                     <span className="font-bold text-primary">{money(l.qty * l.price)}</span>
@@ -610,10 +610,10 @@ function CheckoutPage() {
               </div>
               <div className="flex justify-between text-[11px] text-muted-foreground">
                 <span>{t("delivery_method")}:</span>
-                <span>{deliveryMethod === "pickup" ? "استلام من الفرع (Pick up)" : "توصيل (يُحدد حسب المنطقة)"}</span>
+                <span>{deliveryMethod === "pickup" ? t("checkout_pickup") : t("checkout_delivery_cost")}</span>
               </div>
               <div className="flex justify-between text-[11px] text-muted-foreground">
-                <span>العميل:</span>
+                <span>{t("customer")}:</span>
                 <span>{name} ({phone})</span>
               </div>
               {deliveryMethod === "delivery" && address ? (
