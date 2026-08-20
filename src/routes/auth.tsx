@@ -1,10 +1,10 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Loader2, Lock, Mail, Phone, Sparkles, User } from "lucide-react";
+import { CheckCircle2, Loader2, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/hooks/useAuth";
 import { LogoMark } from "@/components/brand/Logo";
 
 export const Route = createFileRoute("/auth")({
@@ -22,9 +22,14 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const field =
+  "w-full rounded-xl border border-border bg-background/80 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary";
+
 function AuthPage() {
   const { t } = useI18n();
+  const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
+
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,34 +38,46 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      toast.error("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+      return;
+    }
+
     setBusy(true);
     try {
       if (mode === "in") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
         if (error) throw error;
+        toast.success("تم تسجيل الدخول بنجاح");
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: fullName, phone },
+            data: {
+              full_name: fullName.trim(),
+              phone: phone.trim(),
+            },
           },
         });
         if (error) throw error;
+        toast.success("تم إنشاء الحساب بنجاح");
       }
-      toast.success(t("saved"));
       router.navigate({ to: "/" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "حدث خطأ في عملية تسجيل الدخول");
+      toast.error(err instanceof Error ? err.message : "حدث خطأ أثناء المصادقة");
     } finally {
       setBusy(false);
     }
   };
 
-  const googleSignIn = async () => {
+  const handleGoogleSignIn = async () => {
     setGoogleBusy(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -73,23 +90,73 @@ function AuthPage() {
         toast.error(error.message || "تعذر الاتصال بمزود Google");
       }
     } catch (e) {
-      toast.error("حدث خطأ أثناء تسجيل الدخول عبر Google");
+      toast.error("حدث خطأ أثناء الاتصال بمزود Google");
     } finally {
       setGoogleBusy(false);
     }
   };
 
-  const field =
-    "w-full rounded-xl border border-border bg-background/70 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary";
+  const handleSignOut = async () => {
+    setBusy(true);
+    try {
+      await supabase.auth.signOut();
+      toast.success("تم تسجيل الخروج");
+    } catch (e) {
+      toast.error("حدث خطأ أثناء تسجيل الخروج");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // If user is already logged in, show account info and quick navigation
+  if (!authLoading && user) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col px-4 py-16 sm:px-6">
+        <div className="glass rounded-3xl p-8 text-center border border-border shadow-gold-glow space-y-5">
+          <div className="flex justify-center">
+            <CheckCircle2 className="size-14 text-primary animate-pulse" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-foreground">أنت مسجل الدخول بالفعل</h1>
+            <p className="text-xs text-muted-foreground mt-1">{user.email}</p>
+            {profile?.full_name ? (
+              <p className="text-xs font-semibold text-primary mt-1">مرحباً، {profile.full_name}</p>
+            ) : null}
+          </div>
+
+          <div className="pt-2 flex flex-col gap-3">
+            <Link
+              to="/"
+              className="w-full rounded-xl bg-gold-gradient py-3 text-xs font-bold text-primary-foreground shadow-gold-glow"
+            >
+              الذهاب إلى الصفحة الرئيسية
+            </Link>
+            {profile?.role === "admin" ? (
+              <Link
+                to="/admin"
+                className="w-full rounded-xl border border-primary/40 bg-primary/10 py-3 text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+              >
+                لوحة تحكم المتجر (Admin)
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={busy}
+              className="flex items-center justify-center gap-2 text-xs text-destructive hover:underline pt-2 cursor-pointer"
+            >
+              <LogOut className="size-3.5" />
+              <span>تسجيل الخروج من هذا الحساب</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex max-w-md flex-col px-4 py-16 sm:px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="glass rounded-3xl p-8 shadow-gold-glow border border-border/80"
-      >
+      <div className="glass rounded-3xl p-8 shadow-gold-glow border border-border/80">
         <div className="flex flex-col items-center text-center mb-6">
           <LogoMark size={56} />
           <h1 className="font-display text-xl font-bold text-gold-gradient mt-3">{t("brand")}</h1>
@@ -121,7 +188,7 @@ function AuthPage() {
         {/* Google Sign-in */}
         <button
           type="button"
-          onClick={googleSignIn}
+          onClick={handleGoogleSignIn}
           disabled={googleBusy}
           className="w-full flex items-center justify-center gap-3 rounded-xl border border-border bg-background/80 py-3 text-xs font-semibold text-foreground hover:bg-accent transition-all cursor-pointer shadow-xs disabled:opacity-50"
         >
@@ -157,16 +224,17 @@ function AuthPage() {
           <span className="relative bg-card px-3 text-[11px] text-muted-foreground">أو بالبريد الإلكتروني</span>
         </div>
 
-        <form onSubmit={submit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           {mode === "up" ? (
             <>
               <div>
-                <label htmlFor="auth-fullname" className="text-[11px] font-medium text-muted-foreground block mb-1">
+                <label htmlFor="auth-name" className="text-[11px] font-medium text-muted-foreground block mb-1">
                   {t("full_name")}
                 </label>
                 <input
-                  id="auth-fullname"
+                  id="auth-name"
                   name="name"
+                  type="text"
                   autoComplete="name"
                   className={field}
                   placeholder="مثال: خالد العماني"
@@ -176,12 +244,13 @@ function AuthPage() {
                 />
               </div>
               <div>
-                <label htmlFor="auth-phone" className="text-[11px] font-medium text-muted-foreground block mb-1">
+                <label htmlFor="auth-tel" className="text-[11px] font-medium text-muted-foreground block mb-1">
                   {t("phone")}
                 </label>
                 <input
-                  id="auth-phone"
+                  id="auth-tel"
                   name="tel"
+                  type="tel"
                   autoComplete="tel"
                   className={field}
                   dir="ltr"
@@ -195,16 +264,16 @@ function AuthPage() {
           ) : null}
 
           <div>
-            <label htmlFor="auth-email" className="text-[11px] font-medium text-muted-foreground block mb-1">
+            <label htmlFor="auth-email-input" className="text-[11px] font-medium text-muted-foreground block mb-1">
               {t("email")}
             </label>
             <input
-              id="auth-email"
+              id="auth-email-input"
               name="email"
+              type="email"
               autoComplete={mode === "in" ? "username" : "email"}
               spellCheck={false}
               className={field}
-              type="email"
               dir="ltr"
               placeholder="name@example.com"
               value={email}
@@ -214,15 +283,15 @@ function AuthPage() {
           </div>
 
           <div>
-            <label htmlFor="auth-password" className="text-[11px] font-medium text-muted-foreground block mb-1">
+            <label htmlFor="auth-pwd-input" className="text-[11px] font-medium text-muted-foreground block mb-1">
               {t("password")}
             </label>
             <input
-              id="auth-password"
+              id="auth-pwd-input"
               name="password"
+              type="password"
               autoComplete={mode === "in" ? "current-password" : "new-password"}
               className={field}
-              type="password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -231,10 +300,10 @@ function AuthPage() {
             />
           </div>
 
-          <motion.button
-            whileTap={{ scale: 0.97 }}
+          <button
+            type="submit"
             disabled={busy}
-            className="w-full rounded-xl bg-gold-gradient py-3 text-xs font-bold text-primary-foreground shadow-gold-glow disabled:opacity-50 cursor-pointer mt-2"
+            className="w-full rounded-xl bg-gold-gradient py-3 text-xs font-bold text-primary-foreground shadow-gold-glow disabled:opacity-50 cursor-pointer mt-2 hover:opacity-95 transition-opacity"
           >
             {busy ? (
               <Loader2 className="size-4 animate-spin mx-auto" />
@@ -243,9 +312,9 @@ function AuthPage() {
             ) : (
               t("sign_up")
             )}
-          </motion.button>
+          </button>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 }
