@@ -161,8 +161,13 @@ function AuthPage() {
           {mode === "up" ? (
             <>
               <div>
-                <label className="text-[11px] font-medium text-muted-foreground block mb-1">{t("full_name")}</label>
+                <label htmlFor="auth-fullname" className="text-[11px] font-medium text-muted-foreground block mb-1">
+                  {t("full_name")}
+                </label>
                 <input
+                  id="auth-fullname"
+                  name="name"
+                  autoComplete="name"
                   className={field}
                   placeholder="مثال: خالد العماني"
                   value={fullName}
@@ -171,8 +176,13 @@ function AuthPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] font-medium text-muted-foreground block mb-1">{t("phone")}</label>
+                <label htmlFor="auth-phone" className="text-[11px] font-medium text-muted-foreground block mb-1">
+                  {t("phone")}
+                </label>
                 <input
+                  id="auth-phone"
+                  name="tel"
+                  autoComplete="tel"
                   className={field}
                   dir="ltr"
                   placeholder="96877036097"
@@ -185,8 +195,14 @@ function AuthPage() {
           ) : null}
 
           <div>
-            <label className="text-[11px] font-medium text-muted-foreground block mb-1">{t("email")}</label>
+            <label htmlFor="auth-email" className="text-[11px] font-medium text-muted-foreground block mb-1">
+              {t("email")}
+            </label>
             <input
+              id="auth-email"
+              name="email"
+              autoComplete={mode === "in" ? "username" : "email"}
+              spellCheck={false}
               className={field}
               type="email"
               dir="ltr"
@@ -198,8 +214,13 @@ function AuthPage() {
           </div>
 
           <div>
-            <label className="text-[11px] font-medium text-muted-foreground block mb-1">{t("password")}</label>
+            <label htmlFor="auth-password" className="text-[11px] font-medium text-muted-foreground block mb-1">
+              {t("password")}
+            </label>
             <input
+              id="auth-password"
+              name="password"
+              autoComplete={mode === "in" ? "current-password" : "new-password"}
               className={field}
               type="password"
               placeholder="••••••••"

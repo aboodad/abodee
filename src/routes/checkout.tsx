@@ -246,10 +246,13 @@ function CheckoutPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                <label htmlFor="checkout-name" className="text-xs font-medium text-muted-foreground block mb-1.5">
                   {t("full_name")} <span className="text-primary">*</span>
                 </label>
                 <input
+                  id="checkout-name"
+                  name="name"
+                  autoComplete="name"
                   className={field}
                   placeholder="مثال: حنان الحارثي"
                   value={name}
@@ -259,10 +262,13 @@ function CheckoutPage() {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                <label htmlFor="checkout-phone" className="text-xs font-medium text-muted-foreground block mb-1.5">
                   {t("phone")} <span className="text-primary">*</span>
                 </label>
                 <input
+                  id="checkout-phone"
+                  name="tel"
+                  autoComplete="tel"
                   className={field}
                   dir="ltr"
                   placeholder="مثال: 96895081141"
@@ -273,10 +279,14 @@ function CheckoutPage() {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                <label htmlFor="checkout-email" className="text-xs font-medium text-muted-foreground block mb-1.5">
                   {t("email")} (اختياري)
                 </label>
                 <input
+                  id="checkout-email"
+                  name="email"
+                  autoComplete="email"
+                  spellCheck={false}
                   className={field}
                   dir="ltr"
                   type="email"

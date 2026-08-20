@@ -38,7 +38,7 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    if (!user) {
+    if (!user?.id) {
       setProfile(null);
       return;
     }
@@ -54,7 +54,7 @@ export function useAuth() {
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [user?.id]);
 
   return { session, user, profile, isAdmin: profile?.role === "admin", loading };
 }
