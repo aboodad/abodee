@@ -61,7 +61,7 @@ function Shop() {
               : "border-border text-muted-foreground hover:text-primary"
           }`}
         >
-          {t("all")}
+          {t("filter_all")}
         </button>
         {(categories.data ?? []).map((c) => (
           <button

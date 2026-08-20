@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ImagePlus, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ImagePlus, Loader2, Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { fetchCategories, fetchProducts, type Product } from "@/lib/products";
 import { removeProductImage, uploadProductImages } from "@/lib/uploads";
+import { translateText } from "@/lib/translator";
 
 export const Route = createFileRoute("/admin/products")({
   component: AdminProducts,
@@ -70,20 +71,88 @@ function AdminProducts() {
 
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [uploading, setUploading] = useState(false);
+  const [translating, setTranslating] = useState(false);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["products"] });
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => ({ ...d, [k]: v }));
 
+  const handleAutoTranslate = async () => {
+    if (!draft.name_ar && !draft.name_en && !draft.description_ar && !draft.description_en) return;
+    setTranslating(true);
+    try {
+      let newNameEn = draft.name_en;
+      let newNameAr = draft.name_ar;
+      let newDescEn = draft.description_en;
+      let newDescAr = draft.description_ar;
+
+      if (draft.name_ar && !draft.name_en) {
+        newNameEn = await translateText(draft.name_ar, "en");
+      } else if (draft.name_en && !draft.name_ar) {
+        newNameAr = await translateText(draft.name_en, "ar");
+      }
+
+      if (draft.description_ar && !draft.description_en) {
+        newDescEn = await translateText(draft.description_ar, "en");
+      } else if (draft.description_en && !draft.description_ar) {
+        newDescAr = await translateText(draft.description_en, "ar");
+      }
+
+      setDraft((d) => ({
+        ...d,
+        name_ar: newNameAr,
+        name_en: newNameEn,
+        description_ar: newDescAr,
+        description_en: newDescEn,
+      }));
+      toast.success(pick("تمت الترجمة التلقائية بنجاح", "Auto-translated successfully"));
+    } catch {
+      toast.error(pick("تعذرت الترجمة التلقائية", "Auto-translation failed"));
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const autoTranslateField = async (sourceText: string, targetField: "name_ar" | "name_en" | "description_ar" | "description_en", targetLang: "ar" | "en") => {
+    if (!sourceText.trim() || draft[targetField].trim()) return;
+    try {
+      const translated = await translateText(sourceText, targetLang);
+      if (translated) {
+        set(targetField, translated);
+      }
+    } catch (e) {
+      console.warn("Field auto-translate failed:", e);
+    }
+  };
+
   const save = useMutation({
     mutationFn: async () => {
-      if (!draft.name_ar.trim() && !draft.name_en.trim()) {
-        throw new Error(t("required_fields"));
+      let finalNameAr = draft.name_ar.trim();
+      let finalNameEn = draft.name_en.trim();
+      let finalDescAr = draft.description_ar.trim();
+      let finalDescEn = draft.description_en.trim();
+
+      if (!finalNameAr && !finalNameEn) {
+        throw new Error(pick("يرجى إدخال اسم المنتج", "Please enter product name"));
       }
+
+      // If one language is missing, auto-translate before saving
+      if (finalNameAr && !finalNameEn) {
+        finalNameEn = await translateText(finalNameAr, "en");
+      } else if (finalNameEn && !finalNameAr) {
+        finalNameAr = await translateText(finalNameEn, "ar");
+      }
+
+      if (finalDescAr && !finalDescEn) {
+        finalDescEn = await translateText(finalDescAr, "en");
+      } else if (finalDescEn && !finalDescAr) {
+        finalDescAr = await translateText(finalDescEn, "ar");
+      }
+
       const payload = {
-        name_ar: draft.name_ar || draft.name_en,
-        name_en: draft.name_en || draft.name_ar,
-        description_ar: draft.description_ar || null,
-        description_en: draft.description_en || null,
+        name_ar: finalNameAr || finalNameEn,
+        name_en: finalNameEn || finalNameAr,
+        description_ar: finalDescAr || null,
+        description_en: finalDescEn || null,
         price: Number(draft.price) || 0,
         cost_price: Number(draft.cost_price) || 0,
         discount_price: draft.discount_price ? Number(draft.discount_price) : null,
@@ -137,27 +206,49 @@ function AdminProducts() {
         className="glass h-fit space-y-4 rounded-2xl p-5"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg text-foreground">
-            {draft.id ? t("edit") : pick("إضافة منتج", "Add product")}
+          <h2 className="text-lg text-foreground font-bold">
+            {draft.id ? t("edit") : t("add_product")}
           </h2>
-          {draft.id ? (
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setDraft(emptyDraft)}
-              className="text-xs text-muted-foreground hover:text-primary"
+              onClick={handleAutoTranslate}
+              disabled={translating}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-500 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg hover:bg-amber-500/20 transition-all cursor-pointer disabled:opacity-50"
+              title="ترجمة تلقائية للغات الأخرى"
             >
-              {t("cancel")}
+              {translating ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+              <span>{translating ? t("auto_translating") : t("auto_translate_btn")}</span>
             </button>
-          ) : null}
+            {draft.id ? (
+              <button
+                type="button"
+                onClick={() => setDraft(emptyDraft)}
+                className="text-xs text-muted-foreground hover:text-primary"
+              >
+                {t("cancel")}
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <label className={label}>
           <span className={hint}>{t("name_ar")}</span>
-          <input value={draft.name_ar} onChange={(e) => set("name_ar", e.target.value)} className={field} />
+          <input
+            value={draft.name_ar}
+            onChange={(e) => set("name_ar", e.target.value)}
+            onBlur={() => autoTranslateField(draft.name_ar, "name_en", "en")}
+            className={field}
+          />
         </label>
         <label className={label}>
           <span className={hint}>{t("name_en")}</span>
-          <input value={draft.name_en} onChange={(e) => set("name_en", e.target.value)} className={field} />
+          <input
+            value={draft.name_en}
+            onChange={(e) => set("name_en", e.target.value)}
+            onBlur={() => autoTranslateField(draft.name_en, "name_ar", "ar")}
+            className={field}
+          />
         </label>
         <label className={label}>
           <span className={hint}>{t("desc_ar")}</span>
@@ -165,6 +256,7 @@ function AdminProducts() {
             rows={2}
             value={draft.description_ar}
             onChange={(e) => set("description_ar", e.target.value)}
+            onBlur={() => autoTranslateField(draft.description_ar, "description_en", "en")}
             className={field}
           />
         </label>
@@ -174,6 +266,7 @@ function AdminProducts() {
             rows={2}
             value={draft.description_en}
             onChange={(e) => set("description_en", e.target.value)}
+            onBlur={() => autoTranslateField(draft.description_en, "description_ar", "ar")}
             className={field}
           />
         </label>

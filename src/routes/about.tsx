@@ -55,7 +55,7 @@ function AboutPage() {
             className="inline-flex items-center gap-2 rounded-xl bg-gold-gradient px-6 py-3 text-xs font-semibold text-primary-foreground shadow-gold-glow hover:opacity-95 transition-opacity"
           >
             <MessageCircle className="size-4" />
-            <span>تواصل عبر واتساب (+{whatsapp})</span>
+            <span>{t("contact_us")} ({whatsapp})</span>
           </a>
           <a
             href={`https://instagram.com/${instagram}`}
@@ -64,7 +64,7 @@ function AboutPage() {
             className="inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-6 py-3 text-xs font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-all"
           >
             <Instagram className="size-4" />
-            <span>انستقرام @{instagram}</span>
+            <span>Instagram @{instagram}</span>
           </a>
         </div>
       </div>
@@ -80,9 +80,14 @@ function AboutPage() {
           <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20">
             <Crown className="size-7" />
           </span>
-          <h3 className="font-display text-lg font-bold text-foreground">الأصالة الملكية</h3>
+          <h3 className="font-display text-lg font-bold text-foreground">
+            {pick("الأصالة الملكية", "Royal Authenticity")}
+          </h3>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            نعتمد في خلطاتنا على أجود أنواع العود المعتق والزيوت الطبيعية النقية دون أي إضافات مقلدة.
+            {pick(
+              "نعتمد في خلطاتنا على أجود أنواع العود المعتق والزيوت الطبيعية النقية دون أي إضافات مقلدة.",
+              "We craft our blends using the finest aged oud and pure natural oils without any synthetic additives.",
+            )}
           </p>
         </motion.div>
 
@@ -96,9 +101,14 @@ function AboutPage() {
           <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20">
             <ShieldCheck className="size-7" />
           </span>
-          <h3 className="font-display text-lg font-bold text-foreground">جودة مضمونة ١٠٠٪</h3>
+          <h3 className="font-display text-lg font-bold text-foreground">
+            {t("value_1_title")}
+          </h3>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            لبان حوجري ظفاري فاخر وبخور تم إعداده بعناية فائقة ليدوم عبيره الفواح في منازلكم ومناسباتكم.
+            {pick(
+              "لبان حوجري ظفاري فاخر وبخور تم إعداده بعناية فائقة ليدوم عبيره الفواح في منازلكم ومناسباتكم.",
+              "Authentic Dhofari Hojari luban and incense carefully prepared to bring long-lasting royal scent to your home.",
+            )}
           </p>
         </motion.div>
 
@@ -112,9 +122,14 @@ function AboutPage() {
           <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20">
             <HeartHandshake className="size-7" />
           </span>
-          <h3 className="font-display text-lg font-bold text-foreground">خدمة عملاء مميزة</h3>
+          <h3 className="font-display text-lg font-bold text-foreground">
+            {t("value_3_title")}
+          </h3>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            متابعة دقيقة لكل طلب وتوصيل سريع ومباشر لكافة مناطق السلطنة ودول الخليج.
+            {pick(
+              "متابعة دقيقة لكل طلب وتوصيل سريع ومباشر لكافة مناطق السلطنة ودول الخليج.",
+              "Dedicated support for every order with fast delivery across Oman and the GCC.",
+            )}
           </p>
         </motion.div>
       </div>
@@ -128,12 +143,12 @@ function AboutPage() {
           </h2>
         </div>
         <p className="text-xs text-muted-foreground mb-6">
-          نعتمد الدفع المسبق عبر التحويل البنكي المباشر لحساب المتجر لضمان تجهيز وشحن طلبك بأسرع وقت:
+          {t("payment_advance_note")}
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-border/80 bg-background/60 p-4">
-            <span className="text-[11px] text-muted-foreground block">البنك</span>
+            <span className="text-[11px] text-muted-foreground block">{t("bank_label")}</span>
             <span className="font-semibold text-sm text-foreground mt-1 block">
               {settings?.bank_name || "بنك مسقط (Bank Muscat)"}
             </span>

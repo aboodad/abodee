@@ -116,8 +116,8 @@ function BranchesPage() {
       ) : (
         <div className="glass rounded-2xl p-12 text-center max-w-md mx-auto">
           <Sparkles className="size-10 text-primary mx-auto opacity-70 mb-3" />
-          <h3 className="font-display text-base text-foreground">جاري تحديث قائمة الفروع</h3>
-          <p className="text-xs text-muted-foreground mt-1">تواصل معنا عبر واتساب لمعرفة أقرب نقطة استلام.</p>
+          <h3 className="font-display text-base text-foreground">{t("branches_updating")}</h3>
+          <p className="text-xs text-muted-foreground mt-1">{t("branches_updating_desc")}</p>
         </div>
       )}
     </div>

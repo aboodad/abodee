@@ -104,7 +104,7 @@ function Hero() {
               className="inline-flex items-center gap-2 rounded-full border border-emerald-600/40 bg-emerald-600/10 px-6 py-3.5 text-sm font-semibold text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all"
             >
               <MessageCircle className="size-4" />
-              <span>طلب مباشر عبر واتساب</span>
+              <span>{t("direct_whatsapp_order")}</span>
             </a>
           </motion.div>
         </div>
@@ -194,13 +194,13 @@ function Home() {
             <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
               {t("shop_by_category")}
             </h2>
-            <p className="text-xs text-muted-foreground mt-1">تصفح تشكيلاتنا العطرية الفاخرة</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("browse_luxury_fragrances")}</p>
           </div>
           <Link
             to="/shop"
             className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
           >
-            <span>عرض الكل</span>
+            <span>{t("view_all")}</span>
             <span>➔</span>
           </Link>
         </div>
@@ -255,7 +255,7 @@ function Home() {
                 to="/offers"
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-500 hover:underline"
               >
-                <span>مشاهدة كل العروض</span>
+                <span>{t("view_all_offers")}</span>
                 <span>➔</span>
               </Link>
             </div>
@@ -276,7 +276,7 @@ function Home() {
             <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
               {t("featured_products")}
             </h2>
-            <p className="text-xs text-muted-foreground mt-1">المختارات الملكية الأكثر طلباً</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("most_popular_selection")}</p>
           </div>
           <Link
             to="/shop"
@@ -306,17 +306,17 @@ function Home() {
             <span>{t("nav_branches")}</span>
           </div>
           <h2 className="font-display text-2xl font-bold text-foreground sm:text-4xl">
-            تفضل بزيارتنا في فروع هاشم للطيب
+            {t("visit_branches_title")}
           </h2>
           <p className="mx-auto max-w-xl text-xs sm:text-sm text-muted-foreground">
-            فروعنا في سلطنة عمان تقدم لك فرصة تجربة الروائح الملكية واللبان الحوجري الفاخر عن قرب.
+            {t("visit_branches_desc")}
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-3">
             <Link
               to="/branches"
               className="rounded-xl bg-gold-gradient px-7 py-3 text-xs font-bold text-primary-foreground shadow-gold-glow"
             >
-              عرض عناوين وأوقات عمل الفروع
+              {t("view_branches_info")}
             </Link>
             <Link
               to="/about"

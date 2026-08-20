@@ -37,7 +37,7 @@ function OffersPage() {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-950/40 via-background to-teal-deep/30 border border-amber-500/20 p-8 sm:p-12 mb-12 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/15 border border-amber-500/30 px-4 py-1.5 text-xs font-bold text-amber-500 mb-4">
           <Flame className="size-4 animate-bounce" />
-          <span>تخفيضات وعروض خاصة</span>
+          <span>{t("offers_badge")}</span>
         </div>
         <h1 className="font-display text-3xl font-bold text-foreground sm:text-5xl">
           {t("offers_title")}
@@ -60,7 +60,7 @@ function OffersPage() {
           <Sparkles className="size-10 text-primary mx-auto opacity-70" />
           <h3 className="font-display text-lg text-foreground">{t("no_offers_now")}</h3>
           <p className="text-xs text-muted-foreground">
-            تصفح جميع المنتجات والبخور والعطور الملكية المتوفرة في المتجر.
+            {t("offers_explore_desc")}
           </p>
           <Link
             to="/shop"
