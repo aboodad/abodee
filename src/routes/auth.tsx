@@ -87,7 +87,11 @@ function AuthPage() {
         },
       });
       if (error) {
-        toast.error(error.message || "تعذر الاتصال بمزود Google");
+        if (error.message?.includes("missing OAuth client ID") || (error as unknown as { code?: string })?.code === "validation_failed") {
+          toast.error("يتطلب تفعيل Google إدخال Client ID في لوحة تحكم Supabase");
+        } else {
+          toast.error(error.message || "تعذر الاتصال بمزود Google");
+        }
       }
     } catch (e) {
       toast.error("حدث خطأ أثناء الاتصال بمزود Google");
