@@ -10,8 +10,8 @@ export type Branch = {
   address_en: string;
   phone: string;
   map_url: string | null;
-  opening_hours_ar: string;
-  opening_hours_en: string;
+  opening_hours_ar: string | null;
+  opening_hours_en: string | null;
   display_order: number;
   is_active: boolean;
   created_at: string;

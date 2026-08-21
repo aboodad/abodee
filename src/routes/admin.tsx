@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { Boxes, Crown, Film, LayoutDashboard, MapPin, Receipt, Settings } from "lucide-react";
+import { Boxes, Crown, Film, FolderTree, LayoutDashboard, MapPin, Receipt, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 
@@ -19,7 +19,11 @@ function AdminLayout() {
   const { t, pick } = useI18n();
 
   if (loading) {
-    return <div className="mx-auto max-w-5xl px-6 py-20 text-center text-muted-foreground">جاري التحقق من الصلاحيات...</div>;
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-20 text-center text-muted-foreground">
+        {pick("جاري التحقق من الصلاحيات...", "Verifying admin access...")}
+      </div>
+    );
   }
 
   if (!user || !isAdmin) {
@@ -47,9 +51,16 @@ function AdminLayout() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="flex items-center gap-3 mb-2">
         <Crown className="size-6 text-primary" />
-        <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">لوحة تحكم المتجر</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
+          {pick("لوحة تحكم المتجر", "Store Admin Panel")}
+        </h1>
       </div>
-      <p className="text-xs text-muted-foreground">إدارة منتجات وعروض وفروع وطلبات متجر هاشم للطيب</p>
+      <p className="text-xs text-muted-foreground">
+        {pick(
+          "إدارة منتجات وعروض وفروع وطلبات متجر هاشم للطيب",
+          "Manage products, offers, branches, and orders for HASHEM LELTEEB boutique.",
+        )}
+      </p>
 
       <nav className="mt-6 flex flex-wrap gap-2 border-b border-border/70 pb-4">
         <Link to="/admin" activeOptions={{ exact: true }} className={tab} activeProps={{ className: active }}>
@@ -72,8 +83,8 @@ function AdminLayout() {
         </Link>
         <Link to="/admin/categories" className={tab} activeProps={{ className: active }}>
           <span className="inline-flex items-center gap-2">
-            <Boxes className="size-4 text-amber-500" />
-            <span>الأقسام والتصنيفات</span>
+            <FolderTree className="size-4" />
+            <span>{t("tab_categories")}</span>
           </span>
         </Link>
         <Link to="/admin/branches" className={tab} activeProps={{ className: active }}>

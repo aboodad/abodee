@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, EyeOff, Trash2, UploadCloud } from "lucide-react";
+import { Eye, EyeOff, Loader2, Sparkles, Trash2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { fetchProducts } from "@/lib/products";
@@ -13,6 +13,7 @@ import {
   uploadPromoVideo,
   type PromoVideo,
 } from "@/lib/videos";
+import { translateText } from "@/lib/translator";
 
 export const Route = createFileRoute("/admin/videos")({
   component: AdminVideos,
@@ -34,10 +35,30 @@ function AdminVideos() {
   const [order, setOrder] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
+  const [translating, setTranslating] = useState(false);
 
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ["promo-videos-all"] });
     void qc.invalidateQueries({ queryKey: ["promo-videos"] });
+  };
+
+  const autoTranslateTitle = async () => {
+    if (!titleAr && !titleEn) return;
+    setTranslating(true);
+    try {
+      if (titleAr && !titleEn) {
+        const tr = await translateText(titleAr, "en");
+        setTitleEn(tr);
+      } else if (titleEn && !titleAr) {
+        const tr = await translateText(titleEn, "ar");
+        setTitleAr(tr);
+      }
+      toast.success(pick("تمت الترجمة التلقائية بنجاح", "Auto-translated successfully"));
+    } catch {
+      toast.error(pick("تعذرت الترجمة التلقائية", "Auto-translation failed"));
+    } finally {
+      setTranslating(false);
+    }
   };
 
   const create = useMutation({
@@ -80,7 +101,7 @@ function AdminVideos() {
   const remove = useMutation({
     mutationFn: (v: PromoVideo) => deletePromoVideo(v),
     onSuccess: () => {
-      toast.success(pick("تم الحذف", "Deleted"));
+      toast.success(t("deleted"));
       invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -98,7 +119,19 @@ function AdminVideos() {
         }}
         className="glass space-y-4 rounded-2xl p-5"
       >
-        <h2 className="text-lg text-foreground">{pick("إضافة فيديو", "Add video")}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg text-foreground font-bold">{pick("إضافة فيديو ترويجي", "Add Promo Video")}</h2>
+          <button
+            type="button"
+            onClick={autoTranslateTitle}
+            disabled={translating}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-500 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-lg hover:bg-amber-500/20 transition-all cursor-pointer disabled:opacity-50"
+            title="ترجمة تلقائية / Auto-Translate"
+          >
+            {translating ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+            <span>{translating ? t("auto_translating") : t("auto_translate_btn")}</span>
+          </button>
+        </div>
 
         <label className="block space-y-1.5">
           <span className="text-xs text-muted-foreground">{t("video_title_ar")}</span>
@@ -132,7 +165,7 @@ function AdminVideos() {
         </label>
 
         <label className="block space-y-1.5">
-          <span className="text-xs text-muted-foreground">CTA link</span>
+          <span className="text-xs text-muted-foreground">{t("video_cta_link")}</span>
           <input
             value={ctaLink}
             onChange={(e) => setCtaLink(e.target.value)}
@@ -168,10 +201,10 @@ function AdminVideos() {
         <button
           type="submit"
           disabled={create.isPending}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-teal px-5 py-3 text-sm font-semibold text-teal-foreground disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-gold-gradient px-5 py-3 text-sm font-semibold text-primary-foreground shadow-gold-glow disabled:opacity-60 cursor-pointer"
         >
           <UploadCloud className="size-4" />
-          {pick("رفع وإضافة", "Upload & add")}
+          {pick("رفع وإضافة الفيديو", "Upload & Add Video")}
         </button>
       </form>
 
@@ -211,7 +244,7 @@ function AdminVideos() {
         ))}
         {videos.data && videos.data.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {pick("لا توجد فيديوهات بعد.", "No videos yet.")}
+            {t("no_videos_yet")}
           </p>
         ) : null}
       </div>

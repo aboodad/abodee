@@ -10,6 +10,7 @@ import {
   MapPin,
   Phone,
   Plus,
+  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -21,6 +22,7 @@ import {
   updateBranch,
   type Branch,
 } from "@/lib/branches";
+import { translateText } from "@/lib/translator";
 
 export const Route = createFileRoute("/admin/branches")({
   component: AdminBranchesPage,
@@ -35,6 +37,7 @@ function AdminBranchesPage() {
 
   const [editing, setEditing] = useState<Branch | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const [form, setForm] = useState<Partial<Branch>>({
     name_ar: "",
     name_en: "",
@@ -55,15 +58,79 @@ function AdminBranchesPage() {
     queryFn: () => fetchBranches(false),
   });
 
+  const autoTranslateBranch = async () => {
+    if (!form.name_ar && !form.name_en && !form.address_ar && !form.address_en) return;
+    setTranslating(true);
+    try {
+      let nameAr = form.name_ar || "";
+      let nameEn = form.name_en || "";
+      let addrAr = form.address_ar || "";
+      let addrEn = form.address_en || "";
+      let cityAr = form.city_ar || "";
+      let cityEn = form.city_en || "";
+
+      if (nameAr && !nameEn) nameEn = await translateText(nameAr, "en");
+      else if (nameEn && !nameAr) nameAr = await translateText(nameEn, "ar");
+
+      if (addrAr && !addrEn) addrEn = await translateText(addrAr, "en");
+      else if (addrEn && !addrAr) addrAr = await translateText(addrEn, "ar");
+
+      if (cityAr && !cityEn) cityEn = await translateText(cityAr, "en");
+      else if (cityEn && !cityAr) cityAr = await translateText(cityEn, "ar");
+
+      setForm((p) => ({
+        ...p,
+        name_ar: nameAr,
+        name_en: nameEn,
+        address_ar: addrAr,
+        address_en: addrEn,
+        city_ar: cityAr,
+        city_en: cityEn,
+      }));
+      toast.success(pick("تمت الترجمة التلقائية بنجاح", "Auto-translated successfully"));
+    } catch {
+      toast.error(pick("تعذرت الترجمة التلقائية", "Auto-translation failed"));
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!form.name_ar || !form.address_ar) {
-        throw new Error("يرجى إدخال اسم الفرع وعنوانه بالعربي");
+      let finalNameAr = form.name_ar?.trim() || "";
+      let finalNameEn = form.name_en?.trim() || "";
+      let finalAddressAr = form.address_ar?.trim() || "";
+      let finalAddressEn = form.address_en?.trim() || "";
+
+      if (!finalNameAr && !finalNameEn) {
+        throw new Error(pick("يرجى إدخال اسم الفرع", "Please enter branch name"));
       }
+
+      if (finalNameAr && !finalNameEn) finalNameEn = await translateText(finalNameAr, "en");
+      else if (finalNameEn && !finalNameAr) finalNameAr = await translateText(finalNameEn, "ar");
+
+      if (finalAddressAr && !finalAddressEn) finalAddressEn = await translateText(finalAddressAr, "en");
+      else if (finalAddressEn && !finalAddressAr) finalAddressAr = await translateText(finalAddressEn, "ar");
+
+      const payload = {
+        name_ar: finalNameAr || finalNameEn,
+        name_en: finalNameEn || finalNameAr,
+        city_ar: form.city_ar || "سلطنة عمان",
+        city_en: form.city_en || "Oman",
+        address_ar: finalAddressAr || finalAddressEn,
+        address_en: finalAddressEn || finalAddressAr,
+        phone: form.phone || "+96877036097",
+        map_url: form.map_url || null,
+        opening_hours_ar: form.opening_hours_ar || null,
+        opening_hours_en: form.opening_hours_en || null,
+        display_order: Number(form.display_order) || 0,
+        is_active: form.is_active ?? true,
+      };
+
       if (editing) {
-        await updateBranch(editing.id, form);
+        await updateBranch(editing.id, payload);
       } else {
-        await createBranch(form as Omit<Branch, "id" | "created_at">);
+        await createBranch(payload as Omit<Branch, "id" | "created_at">);
       }
     },
     onSuccess: () => {
@@ -74,7 +141,7 @@ function AdminBranchesPage() {
       setEditing(null);
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "حدث خطأ أثناء حفظ الفرع");
+      toast.error(err instanceof Error ? err.message : pick("حدث خطأ أثناء حفظ الفرع", "Error saving branch"));
     },
   });
 
@@ -86,7 +153,7 @@ function AdminBranchesPage() {
       toast.success(t("deleted"));
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "تعذر حذف الفرع");
+      toast.error(err instanceof Error ? err.message : pick("تعذر حذف الفرع", "Failed to delete branch"));
     },
   });
 
@@ -123,7 +190,10 @@ function AdminBranchesPage() {
             {t("tab_branches")}
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            إدارة مواقع الفروع وعناوينها وساعات العمل وأرقام التواصل
+            {pick(
+              "إدارة مواقع الفروع وعناوينها وساعات العمل وأرقام التواصل",
+              "Manage branch locations, addresses, working hours, and contact numbers.",
+            )}
           </p>
         </div>
 
@@ -138,7 +208,9 @@ function AdminBranchesPage() {
       </div>
 
       {isLoading ? (
-        <div className="p-12 text-center text-muted-foreground">جاري تحميل الفروع...</div>
+        <div className="p-12 text-center text-muted-foreground">
+          {pick("جاري تحميل الفروع...", "Loading branches...")}
+        </div>
       ) : branches.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {branches.map((b) => (
@@ -165,7 +237,7 @@ function AdminBranchesPage() {
                       b.is_active ? "bg-emerald-500/15 text-emerald-600" : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {b.is_active ? "نشط" : "معطل"}
+                    {b.is_active ? pick("نشط", "Active") : pick("معطل", "Inactive")}
                   </span>
                 </div>
 
@@ -198,7 +270,7 @@ function AdminBranchesPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm("هل أنت متأكد من حذف هذا الفرع؟")) {
+                      if (confirm(pick("هل أنت متأكد من حذف هذا الفرع؟", "Are you sure you want to delete this branch?"))) {
                         deleteMutation.mutate(b.id);
                       }
                     }}
@@ -217,7 +289,7 @@ function AdminBranchesPage() {
                     className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
                   >
                     <ExternalLink className="size-3" />
-                    <span>الخريطة</span>
+                    <span>{pick("الخريطة", "Map")}</span>
                   </a>
                 ) : null}
               </div>
@@ -226,7 +298,9 @@ function AdminBranchesPage() {
         </div>
       ) : (
         <div className="glass rounded-2xl p-12 text-center max-w-md mx-auto">
-          <p className="text-sm text-muted-foreground mb-4">لا توجد فروع مسجلة حتى الآن.</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            {pick("لا توجد فروع مسجلة حتى الآن.", "No branches registered yet.")}
+          </p>
           <button
             type="button"
             onClick={openAdd}
@@ -243,22 +317,34 @@ function AdminBranchesPage() {
           <div className="glass relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl p-6 sm:p-8 border border-border shadow-2xl">
             <div className="flex items-center justify-between border-b border-border/70 pb-4 mb-5">
               <h3 className="font-display text-lg font-bold text-foreground">
-                {editing ? "تعديل بيانات الفرع" : t("add_branch")}
+                {editing ? pick("تعديل بيانات الفرع", "Edit Branch") : t("add_branch")}
               </h3>
-              <button
-                type="button"
-                onClick={() => setModalOpen(false)}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                <X className="size-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={autoTranslateBranch}
+                  disabled={translating}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-500 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg hover:bg-amber-500/20 transition-all cursor-pointer disabled:opacity-50"
+                  title="ترجمة تلقائية / Auto-Translate"
+                >
+                  {translating ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+                  <span>{translating ? t("auto_translating") : t("auto_translate_btn")}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
             </div>
 
             <div className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-medium text-muted-foreground block mb-1">
-                    اسم الفرع (عربي) <span className="text-primary">*</span>
+                    {pick("اسم الفرع (عربي)", "Branch Name (Arabic)")} <span className="text-primary">*</span>
                   </label>
                   <input
                     className={field}
@@ -269,7 +355,7 @@ function AdminBranchesPage() {
                 </div>
                 <div>
                   <label className="font-medium text-muted-foreground block mb-1">
-                    اسم الفرع (إنجليزي)
+                    {pick("اسم الفرع (إنجليزي)", "Branch Name (English)")}
                   </label>
                   <input
                     className={field}
@@ -282,7 +368,9 @@ function AdminBranchesPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-medium text-muted-foreground block mb-1">المدينة / المنطقة (عربي)</label>
+                  <label className="font-medium text-muted-foreground block mb-1">
+                    {pick("المدينة / المنطقة (عربي)", "City / Region (Arabic)")}
+                  </label>
                   <input
                     className={field}
                     placeholder="مسقط"
@@ -291,7 +379,9 @@ function AdminBranchesPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-medium text-muted-foreground block mb-1">المدينة (إنجليزي)</label>
+                  <label className="font-medium text-muted-foreground block mb-1">
+                    {pick("المدينة (إنجليزي)", "City (English)")}
+                  </label>
                   <input
                     className={field}
                     placeholder="Muscat"
@@ -303,7 +393,7 @@ function AdminBranchesPage() {
 
               <div>
                 <label className="font-medium text-muted-foreground block mb-1">
-                  العنوان التفصيلي (عربي) <span className="text-primary">*</span>
+                  {pick("العنوان التفصيلي (عربي)", "Detailed Address (Arabic)")} <span className="text-primary">*</span>
                 </label>
                 <input
                   className={field}
@@ -315,7 +405,7 @@ function AdminBranchesPage() {
 
               <div>
                 <label className="font-medium text-muted-foreground block mb-1">
-                  العنوان (إنجليزي)
+                  {pick("العنوان (إنجليزي)", "Address (English)")}
                 </label>
                 <input
                   className={field}
@@ -327,7 +417,9 @@ function AdminBranchesPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-medium text-muted-foreground block mb-1">رقم الهاتف / التواصل</label>
+                  <label className="font-medium text-muted-foreground block mb-1">
+                    {pick("رقم الهاتف / التواصل", "Phone Number")}
+                  </label>
                   <input
                     className={field}
                     dir="ltr"
@@ -337,7 +429,9 @@ function AdminBranchesPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-medium text-muted-foreground block mb-1">رابط خريطة Google Maps</label>
+                  <label className="font-medium text-muted-foreground block mb-1">
+                    {pick("رابط خريطة Google Maps", "Google Maps Link")}
+                  </label>
                   <input
                     className={field}
                     dir="ltr"
@@ -349,12 +443,26 @@ function AdminBranchesPage() {
               </div>
 
               <div>
-                <label className="font-medium text-muted-foreground block mb-1">ساعات وأوقات العمل (عربي)</label>
+                <label className="font-medium text-muted-foreground block mb-1">
+                  {pick("ساعات وأوقات العمل (عربي)", "Opening Hours (Arabic)")}
+                </label>
                 <input
                   className={field}
                   placeholder="السبت - الخميس: ٩ ص - ١٠ م | الجمعة: ٤ م - ١٠ م"
                   value={form.opening_hours_ar || ""}
                   onChange={(e) => setForm((p) => ({ ...p, opening_hours_ar: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="font-medium text-muted-foreground block mb-1">
+                  {pick("ساعات وأوقات العمل (إنجليزي)", "Opening Hours (English)")}
+                </label>
+                <input
+                  className={field}
+                  placeholder="Sat - Thu: 9 AM - 10 PM | Fri: 4 PM - 10 PM"
+                  value={form.opening_hours_en || ""}
+                  onChange={(e) => setForm((p) => ({ ...p, opening_hours_en: e.target.value }))}
                 />
               </div>
 
@@ -367,7 +475,7 @@ function AdminBranchesPage() {
                   className="rounded size-4 accent-primary"
                 />
                 <label htmlFor="branchActive" className="text-xs font-semibold text-foreground cursor-pointer">
-                  تفعيل وظهور الفرع للزوار
+                  {pick("تفعيل وظهور الفرع للزوار", "Active and visible to visitors")}
                 </label>
               </div>
 

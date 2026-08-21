@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
-  Check,
   CreditCard,
   Image as ImageIcon,
   Layout,
@@ -18,6 +17,7 @@ import { useI18n } from "@/lib/i18n";
 import { fetchStoreSettings, updateStoreSettings, type StoreSettings } from "@/lib/settings";
 import { uploadProductImage } from "@/lib/uploads";
 import { LogoMark } from "@/components/brand/Logo";
+import { translateText } from "@/lib/translator";
 
 export const Route = createFileRoute("/admin/settings")({
   component: AdminSettingsPage,
@@ -27,7 +27,7 @@ const field =
   "w-full rounded-xl border border-border bg-background/70 px-4 py-2.5 text-xs sm:text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary";
 
 function AdminSettingsPage() {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
   const qc = useQueryClient();
 
   const { data: settings, isLoading } = useQuery({
@@ -38,6 +38,7 @@ function AdminSettingsPage() {
   const [form, setForm] = useState<Partial<StoreSettings>>({});
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
+  const [translatingAbout, setTranslatingAbout] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -52,7 +53,7 @@ function AdminSettingsPage() {
       toast.success(t("saved"));
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "حدث خطأ أثناء حفظ الإعدادات");
+      toast.error(err instanceof Error ? err.message : pick("حدث خطأ أثناء حفظ الإعدادات", "Error saving settings"));
     },
   });
 
@@ -64,9 +65,9 @@ function AdminSettingsPage() {
       setForm(updated);
       await updateStoreSettings(updated);
       qc.invalidateQueries({ queryKey: ["store-settings"] });
-      toast.success("تم رفع وحفظ الشعار الجديد بنجاح!");
+      toast.success(pick("تم رفع وحفظ الشعار الجديد بنجاح!", "New logo uploaded and saved successfully!"));
     } catch (e) {
-      toast.error("فشل رفع صورة الشعار");
+      toast.error(pick("فشل رفع صورة الشعار", "Failed to upload logo image"));
     } finally {
       setUploadingLogo(false);
     }
@@ -80,16 +81,52 @@ function AdminSettingsPage() {
       setForm(updated);
       await updateStoreSettings(updated);
       qc.invalidateQueries({ queryKey: ["store-settings"] });
-      toast.success("تم رفع وحفظ صورة الواجهة الجديدة بنجاح!");
+      toast.success(pick("تم رفع وحفظ صورة الواجهة الجديدة بنجاح!", "New hero image uploaded and saved successfully!"));
     } catch (e) {
-      toast.error("فشل رفع صورة الواجهة");
+      toast.error(pick("فشل رفع صورة الواجهة", "Failed to upload hero image"));
     } finally {
       setUploadingHero(false);
     }
   };
 
+  const autoTranslateAbout = async () => {
+    if (!form.about_title_ar && !form.about_title_en && !form.about_description_ar && !form.about_description_en) return;
+    setTranslatingAbout(true);
+    try {
+      let titleAr = form.about_title_ar || "";
+      let titleEn = form.about_title_en || "";
+      let descAr = form.about_description_ar || "";
+      let descEn = form.about_description_en || "";
+
+      if (titleAr && !titleEn) {
+        titleEn = await translateText(titleAr, "en");
+      } else if (titleEn && !titleAr) {
+        titleAr = await translateText(titleEn, "ar");
+      }
+
+      if (descAr && !descEn) {
+        descEn = await translateText(descAr, "en");
+      } else if (descEn && !descAr) {
+        descAr = await translateText(descEn, "ar");
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        about_title_ar: titleAr,
+        about_title_en: titleEn,
+        about_description_ar: descAr,
+        about_description_en: descEn,
+      }));
+      toast.success(pick("تمت الترجمة التلقائية بنجاح", "Auto-translated successfully"));
+    } catch {
+      toast.error(pick("تعذرت الترجمة التلقائية", "Auto-translation failed"));
+    } finally {
+      setTranslatingAbout(false);
+    }
+  };
+
   if (isLoading) {
-    return <div className="p-12 text-center text-muted-foreground">جاري تحميل الإعدادات...</div>;
+    return <div className="p-12 text-center text-muted-foreground">{pick("جاري تحميل الإعدادات...", "Loading settings...")}</div>;
   }
 
   return (
@@ -97,37 +134,45 @@ function AdminSettingsPage() {
       {/* Page Title */}
       <div>
         <h2 className="font-display text-xl font-bold text-foreground sm:text-2xl">
-          إعدادات المتجر العامة والمظهر
+          {pick("إعدادات المتجر العامة والمظهر", "General Store & Appearance Settings")}
         </h2>
         <p className="text-xs text-muted-foreground mt-0.5">
-          التحكم في اللوجو، صورة واجهة الهيرو، الشريط الإعلاني، بيانات التواصل وبنك مسقط
+          {pick(
+            "التحكم في اللوجو، صورة واجهة الهيرو، الشريط الإعلاني، بيانات التواصل وبنك مسقط",
+            "Manage logo, homepage hero image, announcement bar, contact info, and Bank Muscat details.",
+          )}
         </p>
       </div>
 
-      {/* 1. Hero Image Management (Prominently placed at top) */}
+      {/* 1. Hero Image Management */}
       <div className="glass rounded-3xl p-6 sm:p-8 border-2 border-primary/40 shadow-gold-glow space-y-5 bg-gradient-to-b from-primary/5 to-transparent">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 text-primary font-bold text-base">
             <Layout className="size-5" />
-            <span>صورة واجهة الصفحة الرئيسية (Hero Image)</span>
+            <span>{pick("صورة واجهة الصفحة الرئيسية (Hero Image)", "Homepage Hero Image")}</span>
           </div>
           <span className="rounded-full bg-primary/20 text-primary px-3 py-1 text-[11px] font-bold">
-            الصفحة الرئيسية
+            {t("nav_home")}
           </span>
         </div>
 
         <p className="text-xs text-muted-foreground leading-relaxed">
-          هذه هي الصورة الدائرية الفاخرة التي تظهر في أول الصفحة الرئيسية بجانب العنوان الرئيسي وزر الطلب السريع.
+          {pick(
+            "هذه هي الصورة الدائرية الفاخرة التي تظهر في أول الصفحة الرئيسية بجانب العنوان الرئيسي وزر الطلب السريع.",
+            "This is the luxury circular image displayed at the top of the homepage next to the main heading.",
+          )}
         </p>
 
         <div className="flex flex-col md:flex-row items-center gap-6 pt-2 bg-card/60 p-5 rounded-2xl border border-border">
           {/* Circular Frame Preview */}
           <div className="flex flex-col items-center gap-2">
-            <span className="text-[11px] font-semibold text-muted-foreground">معاينة الصورة الحالية:</span>
+            <span className="text-[11px] font-semibold text-muted-foreground">
+              {pick("معاينة الصورة الحالية:", "Current Image Preview:")}
+            </span>
             <div className="relative size-32 sm:size-36 rounded-full overflow-hidden border-4 border-primary shadow-gold-glow bg-black/40 flex items-center justify-center">
               <img
                 src={form.hero_image_url || "/hashem-logo.jpg"}
-                alt="معاينة الواجهة"
+                alt={pick("معاينة الواجهة", "Hero preview")}
                 className="size-full object-cover"
               />
             </div>
@@ -137,11 +182,11 @@ function AdminSettingsPage() {
           <div className="flex-1 w-full space-y-4">
             <div>
               <label className="text-xs font-semibold text-foreground block mb-1.5">
-                اختر صورة جديدة من جهازك:
+                {pick("اختر صورة جديدة من جهازك:", "Choose a new image from device:")}
               </label>
               <label className="inline-flex items-center justify-center gap-2 rounded-xl bg-gold-gradient px-5 py-3 text-xs font-bold text-primary-foreground shadow-gold-glow cursor-pointer transition-all hover:opacity-95 w-full sm:w-auto">
                 {uploadingHero ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-                <span>{uploadingHero ? "جاري الرفع والحفظ..." : "رفع صورة هيرو جديدة (Upload)"}</span>
+                <span>{uploadingHero ? pick("جاري الرفع والحفظ...", "Uploading and saving...") : pick("رفع صورة هيرو جديدة (Upload)", "Upload New Hero Image")}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -156,7 +201,7 @@ function AdminSettingsPage() {
 
             <div>
               <label className="text-xs font-medium text-muted-foreground block mb-1">
-                أو اكتب رابط الصورة المباشر:
+                {pick("أو اكتب رابط الصورة المباشر:", "Or enter direct image URL:")}
               </label>
               <input
                 className={field}
@@ -173,26 +218,31 @@ function AdminSettingsPage() {
       <div className="glass rounded-3xl p-6 sm:p-8 border border-border/80 space-y-5">
         <div className="flex items-center gap-2.5 text-primary font-bold text-base">
           <ImageIcon className="size-5" />
-          <span>شعار المتجر (Logo)</span>
+          <span>{pick("شعار المتجر (Logo)", "Store Logo")}</span>
         </div>
         <p className="text-xs text-muted-foreground">
-          الشعار الرسمي الذي يظهر في الهيدر والفوتر وفوق أيقونة المتجر.
+          {pick(
+            "الشعار الرسمي الذي يظهر في الهيدر والفوتر وفوق أيقونة المتجر.",
+            "Official logo displayed in header, footer, and brand lockups.",
+          )}
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-6 pt-2 bg-card/40 p-5 rounded-2xl border border-border">
           <div className="flex flex-col items-center gap-2">
-            <span className="text-[11px] font-semibold text-muted-foreground">معاينة الشعار:</span>
+            <span className="text-[11px] font-semibold text-muted-foreground">
+              {pick("معاينة الشعار:", "Logo Preview:")}
+            </span>
             <LogoMark size={80} customUrl={form.logo_url} />
           </div>
 
           <div className="flex-1 w-full space-y-4">
             <div>
               <label className="text-xs font-semibold text-foreground block mb-1.5">
-                رفع شعار جديد:
+                {pick("رفع شعار جديد:", "Upload New Logo:")}
               </label>
               <label className="inline-flex items-center justify-center gap-2 rounded-xl bg-gold-gradient px-5 py-3 text-xs font-bold text-primary-foreground shadow-gold-glow cursor-pointer transition-all hover:opacity-95 w-full sm:w-auto">
                 {uploadingLogo ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-                <span>{uploadingLogo ? "جاري الرفع والحفظ..." : "رفع لوجو جديد من جهازك"}</span>
+                <span>{uploadingLogo ? pick("جاري الرفع والحفظ...", "Uploading and saving...") : pick("رفع لوجو جديد من جهازك", "Upload New Logo")}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -207,7 +257,7 @@ function AdminSettingsPage() {
 
             <div>
               <label className="text-xs font-medium text-muted-foreground block mb-1">
-                رابط صورة الشعار:
+                {pick("رابط صورة الشعار:", "Logo Image URL:")}
               </label>
               <input
                 className={field}
@@ -225,7 +275,7 @@ function AdminSettingsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 text-primary font-bold text-base">
             <Megaphone className="size-5" />
-            <span>الشريط الإعلاني العلوي (Announcement Bar)</span>
+            <span>{pick("الشريط الإعلاني العلوي (Announcement Bar)", "Top Announcement Bar")}</span>
           </div>
 
           <label className="flex items-center gap-2 text-xs cursor-pointer bg-accent/60 px-3 py-1.5 rounded-xl border border-border">
@@ -237,13 +287,15 @@ function AdminSettingsPage() {
               }
               className="rounded accent-primary size-4"
             />
-            <span className="font-semibold text-foreground">تفعيل الشريط</span>
+            <span className="font-semibold text-foreground">
+              {pick("تفعيل الشريط", "Enable Announcement Bar")}
+            </span>
           </label>
         </div>
 
         <div>
           <label className="text-xs font-medium text-muted-foreground block mb-1.5">
-            نص الشريط المتحرك
+            {pick("نص الشريط المتحرك", "Marquee Announcement Text")}
           </label>
           <input
             className={field}
@@ -251,7 +303,10 @@ function AdminSettingsPage() {
             onChange={(e) =>
               setForm((prev) => ({ ...prev, announcement_bar_text: e.target.value }))
             }
-            placeholder="شحن لجميع المناطق • بخور وعطور ملكية فاخرة • منتجات أصيلة ١٠٠٪"
+            placeholder={pick(
+              "شحن لجميع المناطق • بخور وعطور ملكية فاخرة • منتجات أصيلة ١٠٠٪",
+              "Shipping to all areas • Royal incense & fine perfume • 100% genuine products",
+            )}
           />
         </div>
       </div>
@@ -260,13 +315,13 @@ function AdminSettingsPage() {
       <div className="glass rounded-3xl p-6 sm:p-8 border border-border/80 space-y-5">
         <div className="flex items-center gap-2.5 text-primary font-bold text-base">
           <MessageCircle className="size-5" />
-          <span>بيانات التواصل وحسابات المتجر</span>
+          <span>{pick("بيانات التواصل وحسابات المتجر", "Store Contact & Social Accounts")}</span>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label className="text-xs font-medium text-muted-foreground block mb-1.5">
-              رقم الواتساب المعتمد (لاستقبال الطلبات)
+              {pick("رقم الواتساب المعتمد (لاستقبال الطلبات)", "Official WhatsApp Number (For Orders)")}
             </label>
             <input
               className={field}
@@ -281,7 +336,7 @@ function AdminSettingsPage() {
 
           <div>
             <label className="text-xs font-medium text-muted-foreground block mb-1.5">
-              حساب الانستقرام
+              {pick("حساب الانستقرام", "Instagram Handle")}
             </label>
             <input
               className={field}
@@ -296,7 +351,7 @@ function AdminSettingsPage() {
 
           <div>
             <label className="text-xs font-medium text-muted-foreground block mb-1.5">
-              البريد الإلكتروني
+              {t("email")}
             </label>
             <input
               className={field}
@@ -314,16 +369,19 @@ function AdminSettingsPage() {
       <div className="glass rounded-3xl p-6 sm:p-8 border border-border/80 space-y-5">
         <div className="flex items-center gap-2.5 text-primary font-bold text-base">
           <CreditCard className="size-5" />
-          <span>بيانات الحساب البنكي للدفع المسبق (بنك مسقط)</span>
+          <span>{t("bank_details_title")}</span>
         </div>
         <p className="text-xs text-muted-foreground">
-          هذه البيانات تظهر للعميل في صفحة إتمام الطلب وصفحة "من نحن" للتحويل قبل الشحن.
+          {pick(
+            "هذه البيانات تظهر للعميل في صفحة إتمام الطلب وصفحة 'من نحن' للتحويل قبل الشحن.",
+            "These details are shown to customers on Checkout and About Us pages for bank transfer before shipping.",
+          )}
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className="text-xs font-medium text-muted-foreground block mb-1.5">
-              اسم البنك
+              {t("bank_label")}
             </label>
             <input
               className={field}
@@ -381,34 +439,76 @@ function AdminSettingsPage() {
 
       {/* 6. About Us Content */}
       <div className="glass rounded-3xl p-6 sm:p-8 border border-border/80 space-y-5">
-        <div className="flex items-center gap-2.5 text-primary font-bold text-base">
-          <Sparkles className="size-5" />
-          <span>محتوى صفحة "من نحن"</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5 text-primary font-bold text-base">
+            <Sparkles className="size-5" />
+            <span>{pick("محتوى صفحة 'من نحن'", "About Us Page Content")}</span>
+          </div>
+          <button
+            type="button"
+            onClick={autoTranslateAbout}
+            disabled={translatingAbout}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-500 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg hover:bg-amber-500/20 transition-all cursor-pointer disabled:opacity-50"
+            title="ترجمة تلقائية / Auto-Translate"
+          >
+            {translatingAbout ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+            <span>{translatingAbout ? t("auto_translating") : t("auto_translate_btn")}</span>
+          </button>
         </div>
 
         <div className="space-y-4">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground block mb-1.5">
-              العنوان الرئيسي (عربي)
-            </label>
-            <input
-              className={field}
-              value={form.about_title_ar || ""}
-              onChange={(e) => setForm((prev) => ({ ...prev, about_title_ar: e.target.value }))}
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                {pick("العنوان الرئيسي (عربي)", "Main Title (Arabic)")}
+              </label>
+              <input
+                className={field}
+                value={form.about_title_ar || ""}
+                onChange={(e) => setForm((prev) => ({ ...prev, about_title_ar: e.target.value }))}
+                placeholder="هاشم للطيب — فخامة العبير الملكي"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                {pick("العنوان الرئيسي (إنجليزي)", "Main Title (English)")}
+              </label>
+              <input
+                className={field}
+                value={form.about_title_en || ""}
+                onChange={(e) => setForm((prev) => ({ ...prev, about_title_en: e.target.value }))}
+                placeholder="HASHEM LELTEEB — Royal Fragrance Luxury"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="text-xs font-medium text-muted-foreground block mb-1.5">
-              الوصف والنبذة التعريفية (عربي)
-            </label>
-            <textarea
-              className={`${field} min-h-[110px]`}
-              value={form.about_description_ar || ""}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, about_description_ar: e.target.value }))
-              }
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                {pick("الوصف والنبذة التعريفية (عربي)", "Description & Story (Arabic)")}
+              </label>
+              <textarea
+                className={`${field} min-h-[110px]`}
+                value={form.about_description_ar || ""}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, about_description_ar: e.target.value }))
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+                {pick("الوصف والنبذة التعريفية (إنجليزي)", "Description & Story (English)")}
+              </label>
+              <textarea
+                className={`${field} min-h-[110px]`}
+                value={form.about_description_en || ""}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, about_description_en: e.target.value }))
+                }
+              />
+            </div>
           </div>
         </div>
       </div>
