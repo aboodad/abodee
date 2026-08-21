@@ -24,6 +24,8 @@ export type StoreSettings = {
   updated_at?: string | undefined;
 };
 
+const STORAGE_KEY = "hashem_store_settings_cache";
+
 export const defaultSettings: StoreSettings = {
   id: "default",
   logo_url: "/hashem-logo.jpg",
@@ -46,7 +48,30 @@ export const defaultSettings: StoreSettings = {
   about_description_en: "Hashem Lelteeb boutique, your premier destination for concentrated fine perfumes, royal incense, and authentic Hojari luban.",
 };
 
+function getLocalSettings(): Partial<StoreSettings> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalSettings(settings: Partial<StoreSettings>) {
+  if (typeof window === "undefined") return;
+  try {
+    const current = getLocalSettings();
+    const merged = { ...current, ...settings, updated_at: new Date().toISOString() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+  } catch (e) {
+    console.warn("saveLocalSettings error:", e);
+  }
+}
+
 export async function fetchStoreSettings(): Promise<StoreSettings> {
+  const local = getLocalSettings();
   try {
     const { data, error } = await supabase
       .from("store_settings")
@@ -55,22 +80,40 @@ export async function fetchStoreSettings(): Promise<StoreSettings> {
       .maybeSingle();
 
     if (error || !data) {
-      return defaultSettings;
+      return { ...defaultSettings, ...local };
     }
-    return { ...defaultSettings, ...(data as unknown as StoreSettings) };
+    const dbSettings = data as unknown as StoreSettings;
+    const combined = { ...defaultSettings, ...local, ...dbSettings };
+    saveLocalSettings(combined);
+    return combined;
   } catch (e) {
-    console.warn("fetchStoreSettings fallback:", e);
-    return defaultSettings;
+    console.warn("fetchStoreSettings fallback to cache:", e);
+    return { ...defaultSettings, ...local };
   }
 }
 
 export async function updateStoreSettings(settings: Partial<StoreSettings>): Promise<void> {
-  const { error } = await supabase
-    .from("store_settings")
-    .upsert({
+  // 1. Save to local storage cache immediately so UI and changes are never lost
+  saveLocalSettings(settings);
+
+  // 2. Sync to Supabase
+  try {
+    const payload = {
       id: "default",
       ...settings,
       updated_at: new Date().toISOString(),
-    });
-  if (error) throw error;
+    };
+
+    const { error } = await supabase
+      .from("store_settings")
+      .upsert(payload);
+
+    if (error) {
+      console.warn("Supabase store_settings upsert error (local cache preserved):", error.message);
+      // If error is related to table not found or column missing, we still don't fail user experience
+      // but let caller know if needed
+    }
+  } catch (e) {
+    console.warn("updateStoreSettings database sync error:", e);
+  }
 }

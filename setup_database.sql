@@ -281,7 +281,94 @@ SELECT
  true
 WHERE NOT EXISTS (SELECT 1 FROM public.products WHERE name_en = 'Royal Hojari Luban');
 
--- 11. ترقية الحساب المطلوب إلى أدمن وجعل باقي الحسابات عملاء فقط
+-- 11. جدول إعدادات المتجر store_settings
+CREATE TABLE IF NOT EXISTS public.store_settings (
+  id TEXT PRIMARY KEY DEFAULT 'default',
+  logo_url TEXT,
+  hero_image_url TEXT,
+  announcement_bar_text TEXT,
+  announcement_text_ar TEXT,
+  announcement_text_en TEXT,
+  announcement_bar_active BOOLEAN NOT NULL DEFAULT true,
+  announcement_enabled BOOLEAN NOT NULL DEFAULT true,
+  whatsapp_number TEXT,
+  instagram_handle TEXT,
+  email TEXT,
+  bank_name TEXT,
+  bank_account_number TEXT,
+  bank_recipient_name TEXT,
+  bank_phone_transfer TEXT,
+  about_title_ar TEXT,
+  about_title_en TEXT,
+  about_description_ar TEXT,
+  about_description_en TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+DO $$ BEGIN
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS logo_url TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS hero_image_url TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS announcement_bar_text TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS announcement_text_ar TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS announcement_text_en TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS announcement_bar_active BOOLEAN DEFAULT true;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS announcement_enabled BOOLEAN DEFAULT true;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS whatsapp_number TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS instagram_handle TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS email TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS bank_name TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS bank_account_number TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS bank_recipient_name TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS bank_phone_transfer TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS about_title_ar TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS about_title_en TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS about_description_ar TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS about_description_en TEXT;
+  ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+EXCEPTION
+  WHEN others THEN null;
+END $$;
+
+GRANT SELECT ON public.store_settings TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.store_settings TO authenticated;
+GRANT ALL ON public.store_settings TO service_role;
+ALTER TABLE public.store_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "store settings public read" ON public.store_settings;
+CREATE POLICY "store settings public read" ON public.store_settings FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "store settings admin write" ON public.store_settings;
+CREATE POLICY "store settings admin write" ON public.store_settings FOR ALL TO authenticated USING (public.has_role(auth.uid(),'admin')) WITH CHECK (public.has_role(auth.uid(),'admin'));
+
+-- 12. جدول الفروع branches
+CREATE TABLE IF NOT EXISTS public.branches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name_ar TEXT NOT NULL,
+  name_en TEXT NOT NULL,
+  city_ar TEXT NOT NULL DEFAULT 'سلطنة عمان',
+  city_en TEXT NOT NULL DEFAULT 'Oman',
+  address_ar TEXT NOT NULL,
+  address_en TEXT NOT NULL,
+  phone TEXT NOT NULL DEFAULT '+96877036097',
+  map_url TEXT,
+  opening_hours_ar TEXT,
+  opening_hours_en TEXT,
+  display_order INTEGER NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+GRANT SELECT ON public.branches TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.branches TO authenticated;
+GRANT ALL ON public.branches TO service_role;
+ALTER TABLE public.branches ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "branches public read" ON public.branches;
+CREATE POLICY "branches public read" ON public.branches FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "branches admin write" ON public.branches FOR ALL TO authenticated USING (public.has_role(auth.uid(),'admin')) WITH CHECK (public.has_role(auth.uid(),'admin'));
+
+-- 13. ترقية الحساب المطلوب إلى أدمن وجعل باقي الحسابات عملاء فقط
 UPDATE public.profiles
 SET role = 'admin'
 WHERE id IN (SELECT id FROM auth.users WHERE email = 'gfyhhgftyj@gmail.com');
@@ -289,3 +376,4 @@ WHERE id IN (SELECT id FROM auth.users WHERE email = 'gfyhhgftyj@gmail.com');
 UPDATE public.profiles
 SET role = 'customer'
 WHERE id NOT IN (SELECT id FROM auth.users WHERE email = 'gfyhhgftyj@gmail.com');
+
