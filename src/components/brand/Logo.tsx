@@ -2,7 +2,7 @@ import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { fetchStoreSettings } from "@/lib/settings";
 
-export function LogoMark({ size = 44, customUrl }: { size?: number; customUrl?: string }) {
+export function LogoMark({ size = 44, customUrl }: { size?: number | undefined; customUrl?: string | undefined }) {
   const { data: settings } = useQuery({
     queryKey: ["store-settings"],
     queryFn: fetchStoreSettings,
@@ -36,9 +36,9 @@ export function LogoLockup({
   stacked = false,
   customUrl,
 }: {
-  size?: number;
-  stacked?: boolean;
-  customUrl?: string;
+  size?: number | undefined;
+  stacked?: boolean | undefined;
+  customUrl?: string | undefined;
 }) {
   const { t } = useI18n();
   return (

@@ -260,8 +260,19 @@ const dict = {
   sort_newest: { ar: "الأحدث", en: "Newest" },
   sort_price_low: { ar: "السعر: من الأقل للأعلى", en: "Price: Low to High" },
   sort_price_high: { ar: "السعر: من الأعلى للأقل", en: "Price: High to Low" },
-  no_products_found: { ar: "لم يتم العثور على منتجات مطابقة للبحث", en: "No products matched your search" },
-  clear_filters: { ar: "إعادة ضبط التصفية", en: "Clear filters" },
+  // Admin & misc keys
+  orders_count: { ar: "عدد الطلبات", en: "Orders count" },
+  revenue: { ar: "الإيرادات", en: "Revenue" },
+  net_profit: { ar: "صافي الأرباح", en: "Net profit" },
+  open_map: { ar: "فتح الخريطة", en: "Open map" },
+  none: { ar: "بدون", en: "None" },
+  uploading: { ar: "جاري الرفع...", en: "Uploading..." },
+  featured: { ar: "مميز", en: "Featured" },
+  video_product: { ar: "المنتج المرتبط", en: "Linked product" },
+  video_order: { ar: "الترتيب", en: "Order" },
+  need_sign_in: { ar: "يرجى تسجيل الدخول لعرض قائمة طلباتك.", en: "Please sign in to view your orders." },
+  required_fields: { ar: "يرجى ملء الحقول المطلوبة", en: "Please fill required fields" },
+  all: { ar: "الكل", en: "All" },
   language: { ar: "اللغة", en: "Language" },
 } as const;
 

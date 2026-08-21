@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      branches: {
+        Row: {
+          address_ar: string
+          address_en: string
+          city_ar: string
+          city_en: string
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          map_url: string | null
+          name_ar: string
+          name_en: string
+          opening_hours_ar: string | null
+          opening_hours_en: string | null
+          phone: string
+        }
+        Insert: {
+          address_ar: string
+          address_en: string
+          city_ar: string
+          city_en: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          map_url?: string | null
+          name_ar: string
+          name_en: string
+          opening_hours_ar?: string | null
+          opening_hours_en?: string | null
+          phone: string
+        }
+        Update: {
+          address_ar?: string
+          address_en?: string
+          city_ar?: string
+          city_en?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          map_url?: string | null
+          name_ar?: string
+          name_en?: string
+          opening_hours_ar?: string | null
+          opening_hours_en?: string | null
+          phone?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -113,50 +164,68 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          customer_email: string | null
           customer_name: string
+          customer_notes: string | null
           customer_phone: string
           delivery_address: string
+          delivery_method: string
           id: string
           location_lat: number | null
           location_lng: number | null
           map_url: string | null
+          order_number: string | null
           payment_method: string
+          receipt_image_url: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number
           total_cost: number
           total_profit: number
+          transfer_reference: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          customer_email?: string | null
           customer_name: string
+          customer_notes?: string | null
           customer_phone: string
           delivery_address: string
+          delivery_method?: string
           id?: string
           location_lat?: number | null
           location_lng?: number | null
           map_url?: string | null
+          order_number?: string | null
           payment_method?: string
+          receipt_image_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           total_cost?: number
           total_profit?: number
+          transfer_reference?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          customer_email?: string | null
           customer_name?: string
+          customer_notes?: string | null
           customer_phone?: string
           delivery_address?: string
+          delivery_method?: string
           id?: string
           location_lat?: number | null
           location_lng?: number | null
           map_url?: string | null
+          order_number?: string | null
           payment_method?: string
+          receipt_image_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number
           total_cost?: number
           total_profit?: number
+          transfer_reference?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -290,6 +359,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      store_settings: {
+        Row: {
+          about_description_ar: string | null
+          about_description_en: string | null
+          about_title_ar: string | null
+          about_title_en: string | null
+          announcement_bar_active: boolean | null
+          announcement_bar_text: string | null
+          announcement_enabled: boolean | null
+          announcement_text_ar: string | null
+          announcement_text_en: string | null
+          bank_account_number: string | null
+          bank_name: string | null
+          bank_phone_transfer: string | null
+          bank_recipient_name: string | null
+          created_at: string
+          email: string | null
+          hero_image_url: string | null
+          id: string
+          instagram_handle: string | null
+          logo_url: string | null
+          site_name_ar: string | null
+          site_name_en: string | null
+          tagline_ar: string | null
+          tagline_en: string | null
+          updated_at: string
+          whatsapp_number: string | null
+        }
+        Insert: {
+          about_description_ar?: string | null
+          about_description_en?: string | null
+          about_title_ar?: string | null
+          about_title_en?: string | null
+          announcement_bar_active?: boolean | null
+          announcement_bar_text?: string | null
+          announcement_enabled?: boolean | null
+          announcement_text_ar?: string | null
+          announcement_text_en?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          bank_phone_transfer?: string | null
+          bank_recipient_name?: string | null
+          created_at?: string
+          email?: string | null
+          hero_image_url?: string | null
+          id?: string
+          instagram_handle?: string | null
+          logo_url?: string | null
+          site_name_ar?: string | null
+          site_name_en?: string | null
+          tagline_ar?: string | null
+          tagline_en?: string | null
+          updated_at?: string
+          whatsapp_number?: string | null
+        }
+        Update: {
+          about_description_ar?: string | null
+          about_description_en?: string | null
+          about_title_ar?: string | null
+          about_title_en?: string | null
+          announcement_bar_active?: boolean | null
+          announcement_bar_text?: string | null
+          announcement_enabled?: boolean | null
+          announcement_text_ar?: string | null
+          announcement_text_en?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          bank_phone_transfer?: string | null
+          bank_recipient_name?: string | null
+          created_at?: string
+          email?: string | null
+          hero_image_url?: string | null
+          id?: string
+          instagram_handle?: string | null
+          logo_url?: string | null
+          site_name_ar?: string | null
+          site_name_en?: string | null
+          tagline_ar?: string | null
+          tagline_en?: string | null
+          updated_at?: string
+          whatsapp_number?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

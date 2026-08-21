@@ -40,7 +40,12 @@ function AdminCategoriesPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [translating, setTranslating] = useState(false);
 
-  const [form, setForm] = useState<Partial<Category>>({
+  const [form, setForm] = useState<{
+    name_ar: string;
+    name_en: string;
+    slug: string;
+    image_url: string;
+  }>({
     name_ar: "",
     name_en: "",
     slug: "",
@@ -71,7 +76,7 @@ function AdminCategoriesPage() {
         ...p,
         name_ar: ar,
         name_en: en,
-        slug: autoSlug || p.slug,
+        slug: autoSlug || p.slug || "",
       }));
       toast.success(pick("تمت الترجمة التلقائية بنجاح", "Auto-translated successfully"));
     } catch {
@@ -184,7 +189,12 @@ function AdminCategoriesPage() {
 
   const openEdit = (c: Category) => {
     setEditing(c);
-    setForm(c);
+    setForm({
+      name_ar: c.name_ar,
+      name_en: c.name_en,
+      slug: c.slug,
+      image_url: c.image_url || "",
+    });
     setModalOpen(true);
   };
 

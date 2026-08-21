@@ -49,17 +49,19 @@ export function useAuth() {
       return;
     }
     let active = true;
-    supabase
-      .from("profiles")
-      .select("id, full_name, phone, role")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
+    const loadProfile = async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("id, full_name, phone, role")
+          .eq("id", user.id)
+          .maybeSingle();
         if (active) setProfile((data as Profile) ?? null);
-      })
-      .catch((e) => {
+      } catch (e) {
         console.warn("profile fetch notice:", e);
-      });
+      }
+    };
+    void loadProfile();
 
     return () => {
       active = false;

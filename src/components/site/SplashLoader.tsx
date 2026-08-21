@@ -6,15 +6,19 @@ export function SplashLoader() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
     try {
-      if (sessionStorage.getItem("hashem-splash") === "seen") return;
-      setShow(true);
-      sessionStorage.setItem("hashem-splash", "seen");
-      const timer = setTimeout(() => setShow(false), 1200);
-      return () => clearTimeout(timer);
+      if (sessionStorage.getItem("hashem-splash") !== "seen") {
+        setShow(true);
+        sessionStorage.setItem("hashem-splash", "seen");
+        timer = setTimeout(() => setShow(false), 1200);
+      }
     } catch {
       setShow(false);
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   if (!show) return null;

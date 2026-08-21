@@ -98,7 +98,12 @@ export async function updateCategory(
   id: string,
   input: Partial<Omit<Category, "id">>,
 ): Promise<void> {
-  const updateData: Record<string, unknown> = { ...input };
+  const updateData: {
+    name_ar?: string;
+    name_en?: string;
+    slug?: string;
+    image_url?: string | null;
+  } = { ...input };
   if (input.slug) {
     updateData.slug = input.slug.trim().toLowerCase().replace(/\s+/g, "-");
   }

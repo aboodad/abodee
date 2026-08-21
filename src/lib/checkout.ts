@@ -6,12 +6,12 @@ export type CheckoutInput = {
   userId: string | null;
   customer_name: string;
   customer_phone: string;
-  customer_email?: string;
+  customer_email?: string | undefined;
   delivery_method: "delivery" | "pickup";
   delivery_address: string;
-  customer_notes?: string;
-  transfer_reference?: string;
-  receipt_image_url?: string;
+  customer_notes?: string | undefined;
+  transfer_reference?: string | undefined;
+  receipt_image_url?: string | undefined;
   lat: number | null;
   lng: number | null;
   payment_method: string;
@@ -74,7 +74,7 @@ export async function placeOrder(input: CheckoutInput) {
 
   return {
     orderId: order.id as string,
-    orderNumber: order.order_number || order_number,
+    orderNumber: (order.order_number || order_number) as string,
     total_amount,
     map_url,
   };
@@ -82,21 +82,21 @@ export async function placeOrder(input: CheckoutInput) {
 
 export function whatsappUrl(args: {
   orderId: string;
-  orderNumber?: string;
+  orderNumber?: string | undefined;
   name: string;
   phone: string;
-  email?: string;
+  email?: string | undefined;
   deliveryMethod: "delivery" | "pickup";
   address: string;
-  notes?: string;
-  transferReference?: string;
-  receiptImageUrl?: string;
+  notes?: string | undefined;
+  transferReference?: string | undefined;
+  receiptImageUrl?: string | undefined;
   mapUrl: string | null;
   lines: CartLine[];
   total: number;
-  paymentMethodText?: string;
-  whatsappNumber?: string;
-  siteUrl?: string;
+  paymentMethodText?: string | undefined;
+  whatsappNumber?: string | undefined;
+  siteUrl?: string | undefined;
 }) {
   const dateStr = new Date().toLocaleDateString("ar-OM", {
     day: "2-digit",
