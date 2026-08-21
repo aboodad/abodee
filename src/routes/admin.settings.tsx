@@ -39,6 +39,7 @@ function AdminSettingsPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
   const [translatingAbout, setTranslatingAbout] = useState(false);
+  const [translatingAnnouncement, setTranslatingAnnouncement] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -47,7 +48,13 @@ function AdminSettingsPage() {
   }, [settings]);
 
   const updateMutation = useMutation({
-    mutationFn: (data: Partial<StoreSettings>) => updateStoreSettings(data),
+    mutationFn: (data: Partial<StoreSettings>) => {
+      const payload: Partial<StoreSettings> = {
+        ...data,
+        announcement_bar_text: data.announcement_text_ar || data.announcement_bar_text || data.announcement_text_en || "",
+      };
+      return updateStoreSettings(payload);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["store-settings"] });
       toast.success(t("saved"));
@@ -86,6 +93,35 @@ function AdminSettingsPage() {
       toast.error(pick("فشل رفع صورة الواجهة", "Failed to upload hero image"));
     } finally {
       setUploadingHero(false);
+    }
+  };
+
+  const autoTranslateAnnouncement = async () => {
+    const ar = form.announcement_text_ar || form.announcement_bar_text || "";
+    const en = form.announcement_text_en || "";
+    if (!ar && !en) return;
+    setTranslatingAnnouncement(true);
+    try {
+      let finalAr = ar;
+      let finalEn = en;
+
+      if (ar && !en) {
+        finalEn = await translateText(ar, "en");
+      } else if (en && !ar) {
+        finalAr = await translateText(en, "ar");
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        announcement_text_ar: finalAr,
+        announcement_text_en: finalEn,
+        announcement_bar_text: finalAr || finalEn,
+      }));
+      toast.success(pick("تمت ترجمة الشريط الإعلاني بنجاح", "Announcement bar auto-translated successfully"));
+    } catch {
+      toast.error(pick("تعذرت ترجمة الشريط الإعلاني", "Failed to translate announcement text"));
+    } finally {
+      setTranslatingAnnouncement(false);
     }
   };
 
@@ -275,39 +311,72 @@ function AdminSettingsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 text-primary font-bold text-base">
             <Megaphone className="size-5" />
-            <span>{pick("الشريط الإعلاني العلوي (Announcement Bar)", "Top Announcement Bar")}</span>
+            <span>{pick("الشريط الإعلاني العلوي (Top Announcement Bar)", "Top Announcement Bar")}</span>
           </div>
 
-          <label className="flex items-center gap-2 text-xs cursor-pointer bg-accent/60 px-3 py-1.5 rounded-xl border border-border">
-            <input
-              type="checkbox"
-              checked={form.announcement_bar_active ?? true}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, announcement_bar_active: e.target.checked }))
-              }
-              className="rounded accent-primary size-4"
-            />
-            <span className="font-semibold text-foreground">
-              {pick("تفعيل الشريط", "Enable Announcement Bar")}
-            </span>
-          </label>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={autoTranslateAnnouncement}
+              disabled={translatingAnnouncement}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-500 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg hover:bg-amber-500/20 transition-all cursor-pointer disabled:opacity-50"
+              title="ترجمة تلقائية / Auto-Translate"
+            >
+              {translatingAnnouncement ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+              <span>{translatingAnnouncement ? t("auto_translating") : t("auto_translate_btn")}</span>
+            </button>
+
+            <label className="flex items-center gap-2 text-xs cursor-pointer bg-accent/60 px-3 py-1.5 rounded-xl border border-border">
+              <input
+                type="checkbox"
+                checked={form.announcement_bar_active ?? true}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, announcement_bar_active: e.target.checked, announcement_enabled: e.target.checked }))
+                }
+                className="rounded accent-primary size-4"
+              />
+              <span className="font-semibold text-foreground">
+                {pick("تفعيل الشريط", "Enable Announcement Bar")}
+              </span>
+            </label>
+          </div>
         </div>
 
-        <div>
-          <label className="text-xs font-medium text-muted-foreground block mb-1.5">
-            {pick("نص الشريط المتحرك", "Marquee Announcement Text")}
-          </label>
-          <input
-            className={field}
-            value={form.announcement_bar_text || ""}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, announcement_bar_text: e.target.value }))
-            }
-            placeholder={pick(
-              "شحن لجميع المناطق • بخور وعطور ملكية فاخرة • منتجات أصيلة ١٠٠٪",
-              "Shipping to all areas • Royal incense & fine perfume • 100% genuine products",
-            )}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+              {pick("نص الشريط المتحرك (عربي)", "Announcement Text (Arabic)")}
+            </label>
+            <input
+              className={field}
+              value={form.announcement_text_ar || form.announcement_bar_text || ""}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  announcement_text_ar: e.target.value,
+                  announcement_bar_text: e.target.value,
+                }))
+              }
+              placeholder="شحن لجميع المناطق • بخور وعطور ملكية فاخرة • منتجات أصيلة ١٠٠٪"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1.5">
+              {pick("نص الشريط المتحرك (إنجليزي)", "Announcement Text (English)")}
+            </label>
+            <input
+              className={field}
+              value={form.announcement_text_en || ""}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  announcement_text_en: e.target.value,
+                }))
+              }
+              placeholder="Shipping to all areas • Royal incense & fine perfume • 100% genuine products"
+            />
+          </div>
         </div>
       </div>
 

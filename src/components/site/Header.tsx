@@ -10,17 +10,18 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchStoreSettings } from "@/lib/settings";
 
 function AnnouncementBar() {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
   const { data: settings } = useQuery({
     queryKey: ["store-settings"],
     queryFn: fetchStoreSettings,
   });
 
-  if (settings && !settings.announcement_bar_active) {
+  if (settings && settings.announcement_bar_active === false && settings.announcement_enabled === false) {
     return null;
   }
 
-  const text = settings?.announcement_bar_text || t("marquee");
+  const customText = pick(settings?.announcement_text_ar, settings?.announcement_text_en) || settings?.announcement_bar_text;
+  const text = customText && customText.trim() ? customText : t("marquee");
 
   return (
     <div className="overflow-hidden bg-teal-deep py-2 border-b border-primary/20">

@@ -6,7 +6,10 @@ export type StoreSettings = {
   logo_url: string;
   hero_image_url: string;
   announcement_bar_text: string;
+  announcement_text_ar?: string | undefined;
+  announcement_text_en?: string | undefined;
   announcement_bar_active: boolean;
+  announcement_enabled?: boolean | undefined;
   whatsapp_number: string;
   instagram_handle: string;
   email: string;
@@ -18,7 +21,7 @@ export type StoreSettings = {
   about_title_en: string;
   about_description_ar: string;
   about_description_en: string;
-  updated_at?: string;
+  updated_at?: string | undefined;
 };
 
 export const defaultSettings: StoreSettings = {
@@ -26,7 +29,10 @@ export const defaultSettings: StoreSettings = {
   logo_url: "/hashem-logo.jpg",
   hero_image_url: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=1200&q=80",
   announcement_bar_text: "شحن لجميع المناطق • بخور وعطور ملكية فاخرة • منتجات أصيلة ١٠٠٪",
+  announcement_text_ar: "شحن لجميع المناطق • بخور وعطور ملكية فاخرة • منتجات أصيلة ١٠٠٪",
+  announcement_text_en: "Shipping to all areas • Royal incense & fine perfume • 100% genuine products",
   announcement_bar_active: true,
+  announcement_enabled: true,
   whatsapp_number: ADMIN_WHATSAPP,
   instagram_handle: INSTAGRAM_HANDLE,
   email: OFFICIAL_EMAIL,

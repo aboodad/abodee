@@ -389,58 +389,58 @@ export type Database = {
           whatsapp_number: string | null
         }
         Insert: {
-          about_description_ar?: string | null
-          about_description_en?: string | null
-          about_title_ar?: string | null
-          about_title_en?: string | null
-          announcement_bar_active?: boolean | null
-          announcement_bar_text?: string | null
-          announcement_enabled?: boolean | null
-          announcement_text_ar?: string | null
-          announcement_text_en?: string | null
-          bank_account_number?: string | null
-          bank_name?: string | null
-          bank_phone_transfer?: string | null
-          bank_recipient_name?: string | null
-          created_at?: string
-          email?: string | null
-          hero_image_url?: string | null
-          id?: string
-          instagram_handle?: string | null
-          logo_url?: string | null
-          site_name_ar?: string | null
-          site_name_en?: string | null
-          tagline_ar?: string | null
-          tagline_en?: string | null
-          updated_at?: string
-          whatsapp_number?: string | null
+          about_description_ar?: string | null | undefined
+          about_description_en?: string | null | undefined
+          about_title_ar?: string | null | undefined
+          about_title_en?: string | null | undefined
+          announcement_bar_active?: boolean | null | undefined
+          announcement_bar_text?: string | null | undefined
+          announcement_enabled?: boolean | null | undefined
+          announcement_text_ar?: string | null | undefined
+          announcement_text_en?: string | null | undefined
+          bank_account_number?: string | null | undefined
+          bank_name?: string | null | undefined
+          bank_phone_transfer?: string | null | undefined
+          bank_recipient_name?: string | null | undefined
+          created_at?: string | undefined
+          email?: string | null | undefined
+          hero_image_url?: string | null | undefined
+          id?: string | undefined
+          instagram_handle?: string | null | undefined
+          logo_url?: string | null | undefined
+          site_name_ar?: string | null | undefined
+          site_name_en?: string | null | undefined
+          tagline_ar?: string | null | undefined
+          tagline_en?: string | null | undefined
+          updated_at?: string | undefined
+          whatsapp_number?: string | null | undefined
         }
         Update: {
-          about_description_ar?: string | null
-          about_description_en?: string | null
-          about_title_ar?: string | null
-          about_title_en?: string | null
-          announcement_bar_active?: boolean | null
-          announcement_bar_text?: string | null
-          announcement_enabled?: boolean | null
-          announcement_text_ar?: string | null
-          announcement_text_en?: string | null
-          bank_account_number?: string | null
-          bank_name?: string | null
-          bank_phone_transfer?: string | null
-          bank_recipient_name?: string | null
-          created_at?: string
-          email?: string | null
-          hero_image_url?: string | null
-          id?: string
-          instagram_handle?: string | null
-          logo_url?: string | null
-          site_name_ar?: string | null
-          site_name_en?: string | null
-          tagline_ar?: string | null
-          tagline_en?: string | null
-          updated_at?: string
-          whatsapp_number?: string | null
+          about_description_ar?: string | null | undefined
+          about_description_en?: string | null | undefined
+          about_title_ar?: string | null | undefined
+          about_title_en?: string | null | undefined
+          announcement_bar_active?: boolean | null | undefined
+          announcement_bar_text?: string | null | undefined
+          announcement_enabled?: boolean | null | undefined
+          announcement_text_ar?: string | null | undefined
+          announcement_text_en?: string | null | undefined
+          bank_account_number?: string | null | undefined
+          bank_name?: string | null | undefined
+          bank_phone_transfer?: string | null | undefined
+          bank_recipient_name?: string | null | undefined
+          created_at?: string | undefined
+          email?: string | null | undefined
+          hero_image_url?: string | null | undefined
+          id?: string | undefined
+          instagram_handle?: string | null | undefined
+          logo_url?: string | null | undefined
+          site_name_ar?: string | null | undefined
+          site_name_en?: string | null | undefined
+          tagline_ar?: string | null | undefined
+          tagline_en?: string | null | undefined
+          updated_at?: string | undefined
+          whatsapp_number?: string | null | undefined
         }
         Relationships: []
       }
