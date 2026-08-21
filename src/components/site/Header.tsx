@@ -4,14 +4,19 @@ import { useState } from "react";
 import {
   Boxes,
   Crown,
+  Film,
   Flame,
+  FolderTree,
   Home,
   Info,
+  LayoutDashboard,
   LogOut,
   MapPin,
   Menu,
   MessageCircle,
   Package,
+  Receipt,
+  Settings,
   ShoppingBag,
   Sparkles,
   User,
@@ -73,30 +78,14 @@ export function Header() {
 
   const closeMenu = () => setMobileMenuOpen(false);
 
-  const navItems = [
-    { to: "/", label: t("nav_home"), icon: Home, exact: true },
-    { to: "/shop", label: t("nav_shop"), icon: Boxes },
-    {
-      to: "/offers",
-      label: t("nav_offers"),
-      icon: Flame,
-      highlight: true,
-      badge: pick("خصومات", "Offers"),
-    },
-    {
-      to: "/shop",
-      search: { category: "incense" },
-      label: t("nav_incense"),
-      icon: Sparkles,
-    },
-    {
-      to: "/shop",
-      search: { category: "fragrances" },
-      label: t("nav_perfumes"),
-      icon: Sparkles,
-    },
-    { to: "/branches", label: t("nav_branches"), icon: MapPin },
-    { to: "/about", label: t("nav_about"), icon: Info },
+  const adminSubLinks = [
+    { to: "/admin", label: t("tab_overview"), icon: LayoutDashboard, exact: true },
+    { to: "/admin/products", label: t("tab_products"), icon: Boxes },
+    { to: "/admin/orders", label: t("tab_orders"), icon: Receipt },
+    { to: "/admin/categories", label: t("tab_categories"), icon: FolderTree },
+    { to: "/admin/branches", label: t("tab_branches"), icon: MapPin },
+    { to: "/admin/videos", label: t("tab_videos"), icon: Film },
+    { to: "/admin/settings", label: t("tab_settings"), icon: Settings },
   ];
 
   return (
@@ -244,129 +233,155 @@ export function Header() {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="lg:hidden border-b border-border/80 bg-background/95 backdrop-blur-2xl shadow-2xl overflow-hidden"
           >
-            <div className="max-w-7xl mx-auto px-4 py-6 space-y-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <Link
-                  to="/"
-                  onClick={closeMenu}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Home className="size-4" />
+            <div className="max-w-7xl mx-auto px-4 py-6 space-y-5 max-h-[calc(100vh-6rem)] overflow-y-auto">
+              
+              {/* 👑 ADMIN SECTION (Shown when logged in as Admin) */}
+              {isAdmin ? (
+                <div className="rounded-3xl border border-primary/40 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent p-4 shadow-gold-glow space-y-3">
+                  <div className="flex items-center justify-between border-b border-primary/20 pb-2.5">
+                    <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                      <Crown className="size-4.5" />
+                      <span>{pick("لوحة تحكم الإدارة", "Admin Dashboard")}</span>
+                    </div>
+                    <span className="rounded-full bg-primary/20 text-primary px-2.5 py-0.5 text-[10px] font-bold">
+                      {pick("مدير المتجر", "Admin Access")}
                     </span>
-                    <span className="text-sm">{t("nav_home")}</span>
                   </div>
-                </Link>
 
-                <Link
-                  to="/shop"
-                  onClick={closeMenu}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Boxes className="size-4" />
-                    </span>
-                    <span className="text-sm">{t("nav_shop")}</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {adminSubLinks.map((tab) => (
+                      <Link
+                        key={tab.to}
+                        to={tab.to}
+                        onClick={closeMenu}
+                        className="flex items-center gap-2 rounded-xl bg-card/80 border border-primary/20 p-2.5 text-xs font-semibold text-foreground hover:bg-primary hover:text-primary-foreground transition-all shadow-xs"
+                      >
+                        <tab.icon className="size-4 text-primary shrink-0" />
+                        <span className="truncate">{tab.label}</span>
+                      </Link>
+                    ))}
                   </div>
-                </Link>
+                </div>
+              ) : null}
 
-                <Link
-                  to="/offers"
-                  onClick={closeMenu}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500">
-                      <Flame className="size-4 animate-pulse" />
-                    </span>
-                    <span className="text-sm">{t("nav_offers")}</span>
-                  </div>
-                  <span className="rounded-full bg-amber-500 text-primary-foreground text-[10px] font-bold px-2 py-0.5 animate-pulse">
-                    {pick("خصومات", "Offers")}
-                  </span>
-                </Link>
-
-                <Link
-                  to="/shop"
-                  search={{ category: "incense" }}
-                  onClick={closeMenu}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Sparkles className="size-4" />
-                    </span>
-                    <span className="text-sm">{t("nav_incense")}</span>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/shop"
-                  search={{ category: "fragrances" }}
-                  onClick={closeMenu}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Sparkles className="size-4" />
-                    </span>
-                    <span className="text-sm">{t("nav_perfumes")}</span>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/branches"
-                  onClick={closeMenu}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <MapPin className="size-4" />
-                    </span>
-                    <span className="text-sm">{t("nav_branches")}</span>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/about"
-                  onClick={closeMenu}
-                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Info className="size-4" />
-                    </span>
-                    <span className="text-sm">{t("nav_about")}</span>
-                  </div>
-                </Link>
-
-                {user ? (
-                  <Link
-                    to="/orders"
-                    onClick={closeMenu}
-                    className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium"
-                  >
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Package className="size-4" />
-                    </span>
-                    <span className="text-sm">{t("nav_orders")}</span>
-                  </Link>
-                ) : null}
-
+              {/* Public Store Navigation Links */}
+              <div>
                 {isAdmin ? (
-                  <Link
-                    to="/admin"
-                    onClick={closeMenu}
-                    className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-primary/40 bg-primary/15 text-primary font-bold shadow-gold-glow"
-                  >
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                      <Crown className="size-4" />
-                    </span>
-                    <span className="text-sm">{t("nav_admin")}</span>
-                  </Link>
+                  <p className="text-[11px] font-bold text-muted-foreground mb-2 px-1">
+                    {pick("تصفح صفحات المتجر للزوار:", "Store Pages:")}
+                  </p>
                 ) : null}
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Link
+                    to="/"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Home className="size-4" />
+                      </span>
+                      <span className="text-sm">{t("nav_home")}</span>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/shop"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Boxes className="size-4" />
+                      </span>
+                      <span className="text-sm">{t("nav_shop")}</span>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/offers"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500">
+                        <Flame className="size-4 animate-pulse" />
+                      </span>
+                      <span className="text-sm">{t("nav_offers")}</span>
+                    </div>
+                    <span className="rounded-full bg-amber-500 text-primary-foreground text-[10px] font-bold px-2 py-0.5 animate-pulse">
+                      {pick("خصومات", "Offers")}
+                    </span>
+                  </Link>
+
+                  <Link
+                    to="/shop"
+                    search={{ category: "incense" }}
+                    onClick={closeMenu}
+                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Sparkles className="size-4" />
+                      </span>
+                      <span className="text-sm">{t("nav_incense")}</span>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/shop"
+                    search={{ category: "fragrances" }}
+                    onClick={closeMenu}
+                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Sparkles className="size-4" />
+                      </span>
+                      <span className="text-sm">{t("nav_perfumes")}</span>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/branches"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <MapPin className="size-4" />
+                      </span>
+                      <span className="text-sm">{t("nav_branches")}</span>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/about"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Info className="size-4" />
+                      </span>
+                      <span className="text-sm">{t("nav_about")}</span>
+                    </div>
+                  </Link>
+
+                  {user ? (
+                    <Link
+                      to="/orders"
+                      onClick={closeMenu}
+                      className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/60 text-foreground hover:bg-accent font-medium"
+                    >
+                      <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Package className="size-4" />
+                      </span>
+                      <span className="text-sm">{t("nav_orders")}</span>
+                    </Link>
+                  ) : null}
+                </div>
               </div>
 
               {/* Bottom Quick Actions (Auth & WhatsApp) */}
