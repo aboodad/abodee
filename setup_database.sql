@@ -366,7 +366,8 @@ ALTER TABLE public.branches ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "branches public read" ON public.branches;
 CREATE POLICY "branches public read" ON public.branches FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "branches admin write" ON public.branches FOR ALL TO authenticated USING (public.has_role(auth.uid(),'admin')) WITH CHECK (public.has_role(auth.uid(),'admin'));
+DROP POLICY IF EXISTS "branches admin write" ON public.branches;
+CREATE POLICY "branches admin write" ON public.branches FOR ALL TO authenticated USING (public.has_role(auth.uid(),'admin')) WITH CHECK (public.has_role(auth.uid(),'admin'));
 
 -- 13. ترقية الحساب المطلوب إلى أدمن وجعل باقي الحسابات عملاء فقط
 UPDATE public.profiles
